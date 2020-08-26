@@ -4,6 +4,10 @@ using UnityEngine;
 
 public class PieceController : MonoBehaviour
 {
+
+    private static GameObject selectedPiece = null;
+    private static Transform[] legalMoveCells;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -15,4 +19,23 @@ public class PieceController : MonoBehaviour
     {
         
     }
+
+    private void OnMouseDown()
+    {
+        Debug.Log($"PRESSED {gameObject.name}");
+        selectedPiece = gameObject;
+    }
+
+    public static void BoardClick()
+    {
+        selectedPiece = null;
+        if(legalMoveCells != null)
+        {
+            foreach(Transform obj in legalMoveCells)
+            {
+                Destroy(obj);
+            }
+        }
+    }
+
 }
