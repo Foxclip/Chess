@@ -6,6 +6,8 @@ public class GameController : MonoBehaviour
 {
 
     public GameObject board;
+    public Transform pieces;
+    public GameObject legalMoveCell;
 
     // Start is called before the first frame update
     void Start()
