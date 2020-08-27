@@ -156,5 +156,41 @@ public class PieceController : MonoBehaviour
             PlaceLegalMoveCell(x - 2, y - 1, GetOppositeName());
         }
 
+        // Слон
+        if(gameObject.CompareTag("bishop"))
+        {
+            // Вправо вверх
+            for(float offset = 1; PlaceLegalMoveCell(x + offset, y + offset, GetOppositeName()); offset++)
+            {
+                if(GetFigureAtCell(x + offset, y + offset) != null)
+                {
+                    break;
+                }
+            }
+            // Вправо вниз
+            for(float offset = 1; PlaceLegalMoveCell(x + offset, y - offset, GetOppositeName()); offset++)
+            {
+                if(GetFigureAtCell(x + offset, y - offset) != null)
+                {
+                    break;
+                }
+            }
+            // Влево вниз
+            for(float offset = 1; PlaceLegalMoveCell(x - offset, y - offset, GetOppositeName()); offset++)
+            {
+                if(GetFigureAtCell(x - offset, y - offset) != null)
+                {
+                    break;
+                }
+            }
+            // Влево вверх
+            for(float offset = 1; PlaceLegalMoveCell(x - offset, y + offset, GetOppositeName()); offset++)
+            {
+                if(GetFigureAtCell(x - offset, y + offset) != null)
+                {
+                    break;
+                }
+            }
+        }
     }
 }
