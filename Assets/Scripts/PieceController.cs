@@ -157,5 +157,18 @@ public class PieceController : MonoBehaviour
             PlaceLegalMoveCell(x + 0, y - 1, GetOppositeName());
         }
 
+        // Ферзь
+        if(gameObject.CompareTag("queen"))
+        {
+            PlaceLegalMoveCellLine(x, y, 0, 1);
+            PlaceLegalMoveCellLine(x, y, 1, 0);
+            PlaceLegalMoveCellLine(x, y, 0, -1);
+            PlaceLegalMoveCellLine(x, y, -1, 0);
+            PlaceLegalMoveCellLine(x, y, 1, 1);
+            PlaceLegalMoveCellLine(x, y, 1, -1);
+            PlaceLegalMoveCellLine(x, y, -1, -1);
+            PlaceLegalMoveCellLine(x, y, -1, 1);
+        }
+
     }
 }
