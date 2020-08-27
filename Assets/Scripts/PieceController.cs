@@ -35,11 +35,12 @@ public class PieceController : MonoBehaviour
         return null;
     }
 
-    private static void PlaceLegalMoveCell(float x, float y)
+    private void PlaceLegalMoveCell(float x, float y)
     {
         if(GetFigureAtCell(x, y) == null)
         {
             GameObject newObject = Instantiate(gameController.legalMoveCell, new Vector3(x, y), Quaternion.identity);
+            newObject.GetComponent<LegalMoveController>().piece = transform;
             legalMoveCells.Add(newObject);
         }
     }
