@@ -67,6 +67,17 @@ public class PieceController : MonoBehaviour
         return transform.name.StartsWith("white") ? "black" : "white";
     }
 
+    private void PlaceLegalMoveCellLine(float x, float y, int p_xOffset, int p_yOffset)
+    {
+        for(float xOffset = p_xOffset, yOffset = p_yOffset; PlaceLegalMoveCell(x + xOffset, y + yOffset, GetOppositeName()); xOffset += p_xOffset, yOffset += p_yOffset)
+        {
+            if(GetFigureAtCell(x + xOffset, y + yOffset) != null)
+            {
+                break;
+            }
+        }
+    }
+
     private void OnMouseDown()
     {
         Debug.Log($"PRESSED {gameObject.name}");
@@ -105,53 +116,21 @@ public class PieceController : MonoBehaviour
         // Ладья
         if(gameObject.CompareTag("rook"))
         {
-            // Вверх
-            for(float offset = 1; PlaceLegalMoveCell(x, y + offset, GetOppositeName()); offset++)
-            {
-                if(GetFigureAtCell(x, y + offset) != null)
-                {
-                    break;
-                }
-            }
-            // Вправо
-            for(float offset = 1; PlaceLegalMoveCell(x + offset, y, GetOppositeName()); offset++)
-            {
-                if(GetFigureAtCell(x + offset, y) != null)
-                {
-                    break;
-                }
-            }
-            // Вниз
-            for(float offset = 1; PlaceLegalMoveCell(x, y - offset, GetOppositeName()); offset++)
-            {
-                if(GetFigureAtCell(x, y - offset) != null)
-                {
-                    break;
-                }
-            }
-            // Влево
-            for(float offset = 1; PlaceLegalMoveCell(x - offset, y, GetOppositeName()); offset++)
-            {
-                if(GetFigureAtCell(x - offset, y) != null)
-                {
-                    break;
-                }
-            }
+            PlaceLegalMoveCellLine(x, y, 0, 1);
+            PlaceLegalMoveCellLine(x, y, 1, 0);
+            PlaceLegalMoveCellLine(x, y, 0, -1);
+            PlaceLegalMoveCellLine(x, y, -1, 0);
         }
 
         // Конь
         if(gameObject.CompareTag("knight"))
         {
-            // Вверх
             PlaceLegalMoveCell(x - 1, y + 2, GetOppositeName());
             PlaceLegalMoveCell(x + 1, y + 2, GetOppositeName());
-            // Вправо
             PlaceLegalMoveCell(x + 2, y - 1, GetOppositeName());
             PlaceLegalMoveCell(x + 2, y + 1, GetOppositeName());
-            // Вниз
             PlaceLegalMoveCell(x - 1, y - 2, GetOppositeName());
             PlaceLegalMoveCell(x + 1, y - 2, GetOppositeName());
-            // Влево
             PlaceLegalMoveCell(x - 2, y + 1, GetOppositeName());
             PlaceLegalMoveCell(x - 2, y - 1, GetOppositeName());
         }
@@ -159,38 +138,10 @@ public class PieceController : MonoBehaviour
         // Слон
         if(gameObject.CompareTag("bishop"))
         {
-            // Вправо вверх
-            for(float offset = 1; PlaceLegalMoveCell(x + offset, y + offset, GetOppositeName()); offset++)
-            {
-                if(GetFigureAtCell(x + offset, y + offset) != null)
-                {
-                    break;
-                }
-            }
-            // Вправо вниз
-            for(float offset = 1; PlaceLegalMoveCell(x + offset, y - offset, GetOppositeName()); offset++)
-            {
-                if(GetFigureAtCell(x + offset, y - offset) != null)
-                {
-                    break;
-                }
-            }
-            // Влево вниз
-            for(float offset = 1; PlaceLegalMoveCell(x - offset, y - offset, GetOppositeName()); offset++)
-            {
-                if(GetFigureAtCell(x - offset, y - offset) != null)
-                {
-                    break;
-                }
-            }
-            // Влево вверх
-            for(float offset = 1; PlaceLegalMoveCell(x - offset, y + offset, GetOppositeName()); offset++)
-            {
-                if(GetFigureAtCell(x - offset, y + offset) != null)
-                {
-                    break;
-                }
-            }
+            PlaceLegalMoveCellLine(x, y, 1, 1);
+            PlaceLegalMoveCellLine(x, y, 1, -1);
+            PlaceLegalMoveCellLine(x, y, -1, -1);
+            PlaceLegalMoveCellLine(x, y, -1, 1);
         }
     }
 }
