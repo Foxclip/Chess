@@ -89,7 +89,7 @@ public class PieceController : MonoBehaviour
         if(gameObject.CompareTag("pawn") && gameObject.name.StartsWith("white"))
         {
             PlaceLegalMoveCell(x, y + 1);
-            if(moveCount == 0)
+            if(moveCount == 0 && GetFigureAtCell(x, y + 1) == null)
             {
                 PlaceLegalMoveCell(x, y + 2);
             }
@@ -103,7 +103,7 @@ public class PieceController : MonoBehaviour
         if(gameObject.CompareTag("pawn") && gameObject.name.StartsWith("black"))
         {
             PlaceLegalMoveCell(x, y - 1);
-            if(moveCount == 0)
+            if(moveCount == 0 && GetFigureAtCell(x, y - 1) == null)
             {
                 PlaceLegalMoveCell(x, y - 2);
             }
