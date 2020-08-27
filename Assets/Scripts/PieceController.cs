@@ -143,5 +143,19 @@ public class PieceController : MonoBehaviour
             PlaceLegalMoveCellLine(x, y, -1, -1);
             PlaceLegalMoveCellLine(x, y, -1, 1);
         }
+
+        // Король
+        if(gameObject.CompareTag("king"))
+        {
+            PlaceLegalMoveCell(x - 1, y - 1, GetOppositeName());
+            PlaceLegalMoveCell(x - 1, y + 0, GetOppositeName());
+            PlaceLegalMoveCell(x - 1, y + 1, GetOppositeName());
+            PlaceLegalMoveCell(x + 0, y + 1, GetOppositeName());
+            PlaceLegalMoveCell(x + 1, y + 1, GetOppositeName());
+            PlaceLegalMoveCell(x + 1, y + 0, GetOppositeName());
+            PlaceLegalMoveCell(x + 1, y - 1, GetOppositeName());
+            PlaceLegalMoveCell(x + 0, y - 1, GetOppositeName());
+        }
+
     }
 }
