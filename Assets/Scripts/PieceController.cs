@@ -138,5 +138,23 @@ public class PieceController : MonoBehaviour
                 }
             }
         }
+
+        // Конь
+        if(gameObject.CompareTag("knight"))
+        {
+            // Вверх
+            PlaceLegalMoveCell(x - 1, y + 2, GetOppositeName());
+            PlaceLegalMoveCell(x + 1, y + 2, GetOppositeName());
+            // Вправо
+            PlaceLegalMoveCell(x + 2, y - 1, GetOppositeName());
+            PlaceLegalMoveCell(x + 2, y + 1, GetOppositeName());
+            // Вниз
+            PlaceLegalMoveCell(x - 1, y - 2, GetOppositeName());
+            PlaceLegalMoveCell(x + 1, y - 2, GetOppositeName());
+            // Влево
+            PlaceLegalMoveCell(x - 2, y + 1, GetOppositeName());
+            PlaceLegalMoveCell(x - 2, y - 1, GetOppositeName());
+        }
+
     }
 }
