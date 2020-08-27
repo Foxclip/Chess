@@ -22,7 +22,13 @@ public class LegalMoveController : MonoBehaviour
     private void OnMouseDown()
     {
         Debug.Log("LEGAL MOVE");
+        Transform figureAtCell = PieceController.GetFigureAtCell(transform.position.x, transform.position.y);
+        if(figureAtCell != null)
+        {
+            Destroy(figureAtCell.gameObject);
+        }
         piece.position = transform.position;
+        piece.GetComponent<PieceController>().moveCount++;
         PieceController.ClearSelection();
     }
 
