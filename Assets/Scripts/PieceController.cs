@@ -34,7 +34,7 @@ public class PieceController : MonoBehaviour
         return null;
     }
 
-    private void PlaceLegalMoveCell(float x, float y, string takePieces = "", bool freeMove = true)
+    private bool PlaceLegalMoveCell(float x, float y, string takePieces = "", bool freeMove = true)
     {
         Transform figureAtCell = GetFigureAtCell(x, y);
         bool inBounds = x >= 0 && x < 8 && y >= 0 && y < 8;
@@ -46,7 +46,9 @@ public class PieceController : MonoBehaviour
             GameObject newObject = Instantiate(gameController.legalMoveCell, new Vector3(x, y), Quaternion.identity);
             newObject.GetComponent<LegalMoveController>().piece = transform;
             legalMoveCells.Add(newObject);
+            return true;
         }
+        return false;
     }
 
     public static void ClearSelection()
@@ -72,7 +74,7 @@ public class PieceController : MonoBehaviour
         float x = transform.position.x;
         float y = transform.position.y;
 
-        // Белые пешки
+        // Белая пешка
         if(gameObject.CompareTag("pawn") && gameObject.name.StartsWith("white"))
         {
             PlaceLegalMoveCell(x, y + 1);
@@ -86,7 +88,7 @@ public class PieceController : MonoBehaviour
             PlaceLegalMoveCell(x + 1, y + 1, "black", false);
         }
 
-        // Черные пешки
+        // Черная пешка
         if(gameObject.CompareTag("pawn") && gameObject.name.StartsWith("black"))
         {
             PlaceLegalMoveCell(x, y - 1);
@@ -98,6 +100,43 @@ public class PieceController : MonoBehaviour
             PlaceLegalMoveCell(x - 1, y + 1, "white", false);
             PlaceLegalMoveCell(x + 1, y - 1, "white", false);
             PlaceLegalMoveCell(x + 1, y + 1, "white", false);
+        }
+
+        // Ладья
+        if(gameObject.CompareTag("rook"))
+        {
+            // Вверх
+            for(float offset = 1; PlaceLegalMoveCell(x, y + offset, GetOppositeName()); offset++)
+            {
+                if(GetFigureAtCell(x, y + offset) != null)
+                {
+                    break;
+                }
+            }
+            // Вправо
+            for(float offset = 1; PlaceLegalMoveCell(x + offset, y, GetOppositeName()); offset++)
+            {
+                if(GetFigureAtCell(x + offset, y) != null)
+                {
+                    break;
+                }
+            }
+            // Вниз
+            for(float offset = 1; PlaceLegalMoveCell(x, y - offset, GetOppositeName()); offset++)
+            {
+                if(GetFigureAtCell(x, y - offset) != null)
+                {
+                    break;
+                }
+            }
+            // Влево
+            for(float offset = 1; PlaceLegalMoveCell(x - offset, y, GetOppositeName()); offset++)
+            {
+                if(GetFigureAtCell(x - offset, y) != null)
+                {
+                    break;
+                }
+            }
         }
     }
 }
