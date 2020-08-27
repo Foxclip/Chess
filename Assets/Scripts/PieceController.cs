@@ -6,8 +6,7 @@ public class PieceController : MonoBehaviour
 {
 
     private static GameController gameController;
-    private static GameObject selectedPiece = null;
-    private static List<GameObject> legalMoveCells = new List<GameObject>();
+    private static readonly List<GameObject> legalMoveCells = new List<GameObject>();
 
     public int moveCount = 0;
 
@@ -18,10 +17,10 @@ public class PieceController : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
-    {
+    //void Update()
+    //{
         
-    }
+    //}
 
     public static Transform GetFigureAtCell(float x, float y)
     {
@@ -52,7 +51,6 @@ public class PieceController : MonoBehaviour
 
     public static void ClearSelection()
     {
-        selectedPiece = null;
         if(legalMoveCells != null)
         {
             foreach(GameObject obj in legalMoveCells)
@@ -62,14 +60,20 @@ public class PieceController : MonoBehaviour
         }
     }
 
+    private string GetOppositeName()
+    {
+        return transform.name.StartsWith("white") ? "black" : "white";
+    }
+
     private void OnMouseDown()
     {
         Debug.Log($"PRESSED {gameObject.name}");
         ClearSelection();
-        selectedPiece = gameObject;
         float x = transform.position.x;
         float y = transform.position.y;
-        if(gameObject.tag == "pawn" && gameObject.name.StartsWith("white"))
+
+        // Белые пешки
+        if(gameObject.CompareTag("pawn") && gameObject.name.StartsWith("white"))
         {
             PlaceLegalMoveCell(x, y + 1);
             if(moveCount == 0)
@@ -80,6 +84,20 @@ public class PieceController : MonoBehaviour
             PlaceLegalMoveCell(x - 1, y + 1, "black", false);
             PlaceLegalMoveCell(x + 1, y - 1, "black", false);
             PlaceLegalMoveCell(x + 1, y + 1, "black", false);
+        }
+
+        // Черные пешки
+        if(gameObject.CompareTag("pawn") && gameObject.name.StartsWith("black"))
+        {
+            PlaceLegalMoveCell(x, y - 1);
+            if(moveCount == 0)
+            {
+                PlaceLegalMoveCell(x, y - 2);
+            }
+            PlaceLegalMoveCell(x - 1, y - 1, "white", false);
+            PlaceLegalMoveCell(x - 1, y + 1, "white", false);
+            PlaceLegalMoveCell(x + 1, y - 1, "white", false);
+            PlaceLegalMoveCell(x + 1, y + 1, "white", false);
         }
     }
 }
