@@ -7,6 +7,7 @@ public class PieceController : MonoBehaviour
 
     private static GameController gameController;
     private static readonly List<GameObject> legalMoveCells = new List<GameObject>();
+    private static GameObject selectedPiece = null;
 
     public int moveCount = 0;
 
@@ -53,6 +54,7 @@ public class PieceController : MonoBehaviour
 
     public static void ClearSelection()
     {
+        selectedPiece = null;
         if(legalMoveCells != null)
         {
             foreach(GameObject obj in legalMoveCells)
@@ -80,8 +82,20 @@ public class PieceController : MonoBehaviour
 
     private void OnMouseDown()
     {
-        Debug.Log($"PRESSED {gameObject.name}");
+        // Если фигура выбрана, убираем выделение
+        if(selectedPiece == gameObject)
+        {
+            ClearSelection();
+            return;
+        }
+
+        // Убираем выделение с другой фигуры
         ClearSelection();
+
+        // Ставим выделение на данную фигуру
+        selectedPiece = gameObject;
+
+        // Координаты
         float x = transform.position.x;
         float y = transform.position.y;
 
