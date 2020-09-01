@@ -35,21 +35,35 @@ public class PieceController : MonoBehaviour
         return null;
     }
 
-    private bool PlaceLegalMoveCell(float x, float y, string takePieces = "", bool freeMove = true)
+    private bool PlaceLegalMoveCell(float x, float y, string takePieces = "", bool freeMove = true, bool createCell = true, List<Vector2> addToList = null)
     {
         Transform figureAtCell = GetFigureAtCell(x, y);
         bool inBounds = x >= 0 && x < 8 && y >= 0 && y < 8;
         bool canFreeMove = freeMove && figureAtCell == null;
         bool canTakePiece = !takePieces.Equals("") && figureAtCell != null && figureAtCell.name.StartsWith(takePieces);
-        //Debug.Log($"Checking {x}:{y}: inBounds:{inBounds} canFreeMove:{canFreeMove} canTakePiece:{canTakePiece}");
         if((canFreeMove || canTakePiece) && inBounds)
         {
-            GameObject newObject = Instantiate(gameController.legalMoveCell, new Vector3(x, y), Quaternion.identity);
-            newObject.GetComponent<LegalMoveController>().piece = transform;
-            legalMoveCells.Add(newObject);
+            if(addToList != null)
+            {
+                addToList.Add(new Vector2(x, y));
+            }
             return true;
         }
         return false;
+    }
+
+    private void PlaceLegalMoveCellLine(float x, float y, int p_xOffset, int p_yOffset, bool createCell = true, List<Vector2> addToList = null)
+    {
+        for(float xOffset = p_xOffset, yOffset = p_yOffset;
+            PlaceLegalMoveCell(x + xOffset, y + yOffset, takePieces: GetOppositeName(), createCell: createCell, addToList: addToList);
+            xOffset += p_xOffset, yOffset += p_yOffset
+        )
+        {
+            if(GetFigureAtCell(x + xOffset, y + yOffset) != null)
+            {
+                break;
+            }
+        }
     }
 
     public static void ClearSelection()
@@ -69,15 +83,101 @@ public class PieceController : MonoBehaviour
         return transform.name.StartsWith("white") ? "black" : "white";
     }
 
-    private void PlaceLegalMoveCellLine(float x, float y, int p_xOffset, int p_yOffset)
+    private List<Vector2> GetMoveCells()
     {
-        for(float xOffset = p_xOffset, yOffset = p_yOffset; PlaceLegalMoveCell(x + xOffset, y + yOffset, GetOppositeName()); xOffset += p_xOffset, yOffset += p_yOffset)
+
+        List<Vector2> result = new List<Vector2>();
+
+        // Координаты
+        float x = transform.position.x;
+        float y = transform.position.y;
+
+        // Белая пешка
+        if(gameObject.CompareTag("pawn") && gameObject.name.StartsWith("white"))
         {
-            if(GetFigureAtCell(x + xOffset, y + yOffset) != null)
+            PlaceLegalMoveCell(x, y + 1, addToList: result);
+            if(moveCount == 0 && GetFigureAtCell(x, y + 1) == null)
             {
-                break;
+                PlaceLegalMoveCell(x, y + 2, addToList: result);
             }
+            PlaceLegalMoveCell(x - 1, y - 1, "black", false, addToList: result);
+            PlaceLegalMoveCell(x - 1, y + 1, "black", false, addToList: result);
+            PlaceLegalMoveCell(x + 1, y - 1, "black", false, addToList: result);
+            PlaceLegalMoveCell(x + 1, y + 1, "black", false, addToList: result);
         }
+
+        // Черная пешка
+        if(gameObject.CompareTag("pawn") && gameObject.name.StartsWith("black"))
+        {
+            PlaceLegalMoveCell(x, y - 1, addToList: result);
+            if(moveCount == 0 && GetFigureAtCell(x, y - 1) == null)
+            {
+                PlaceLegalMoveCell(x, y - 2, addToList: result);
+            }
+            PlaceLegalMoveCell(x - 1, y - 1, "white", false, addToList: result);
+            PlaceLegalMoveCell(x - 1, y + 1, "white", false, addToList: result);
+            PlaceLegalMoveCell(x + 1, y - 1, "white", false, addToList: result);
+            PlaceLegalMoveCell(x + 1, y + 1, "white", false, addToList: result);
+        }
+
+        // Ладья
+        if(gameObject.CompareTag("rook"))
+        {
+            PlaceLegalMoveCellLine(x, y, 0, 1, addToList: result);
+            PlaceLegalMoveCellLine(x, y, 1, 0, addToList: result);
+            PlaceLegalMoveCellLine(x, y, 0, -1, addToList: result);
+            PlaceLegalMoveCellLine(x, y, -1, 0, addToList: result);
+        }
+
+        // Конь
+        if(gameObject.CompareTag("knight"))
+        {
+            PlaceLegalMoveCell(x - 1, y + 2, GetOppositeName(), addToList: result);
+            PlaceLegalMoveCell(x + 1, y + 2, GetOppositeName(), addToList: result);
+            PlaceLegalMoveCell(x + 2, y - 1, GetOppositeName(), addToList: result);
+            PlaceLegalMoveCell(x + 2, y + 1, GetOppositeName(), addToList: result);
+            PlaceLegalMoveCell(x - 1, y - 2, GetOppositeName(), addToList: result);
+            PlaceLegalMoveCell(x + 1, y - 2, GetOppositeName(), addToList: result);
+            PlaceLegalMoveCell(x - 2, y + 1, GetOppositeName(), addToList: result);
+            PlaceLegalMoveCell(x - 2, y - 1, GetOppositeName(), addToList: result);
+        }
+
+        // Слон
+        if(gameObject.CompareTag("bishop"))
+        {
+            PlaceLegalMoveCellLine(x, y, 1, 1, addToList: result);
+            PlaceLegalMoveCellLine(x, y, 1, -1, addToList: result);
+            PlaceLegalMoveCellLine(x, y, -1, -1, addToList: result);
+            PlaceLegalMoveCellLine(x, y, -1, 1, addToList: result);
+        }
+
+        // Король
+        if(gameObject.CompareTag("king"))
+        {
+            PlaceLegalMoveCell(x - 1, y - 1, GetOppositeName(), addToList: result);
+            PlaceLegalMoveCell(x - 1, y + 0, GetOppositeName(), addToList: result);
+            PlaceLegalMoveCell(x - 1, y + 1, GetOppositeName(), addToList: result);
+            PlaceLegalMoveCell(x + 0, y + 1, GetOppositeName(), addToList: result);
+            PlaceLegalMoveCell(x + 1, y + 1, GetOppositeName(), addToList: result);
+            PlaceLegalMoveCell(x + 1, y + 0, GetOppositeName(), addToList: result);
+            PlaceLegalMoveCell(x + 1, y - 1, GetOppositeName(), addToList: result);
+            PlaceLegalMoveCell(x + 0, y - 1, GetOppositeName(), addToList: result);
+        }
+
+        // Ферзь
+        if(gameObject.CompareTag("queen"))
+        {
+            PlaceLegalMoveCellLine(x, y, 0, 1, addToList: result);
+            PlaceLegalMoveCellLine(x, y, 1, 0, addToList: result);
+            PlaceLegalMoveCellLine(x, y, 0, -1, addToList: result);
+            PlaceLegalMoveCellLine(x, y, -1, 0, addToList: result);
+            PlaceLegalMoveCellLine(x, y, 1, 1, addToList: result);
+            PlaceLegalMoveCellLine(x, y, 1, -1, addToList: result);
+            PlaceLegalMoveCellLine(x, y, -1, -1, addToList: result);
+            PlaceLegalMoveCellLine(x, y, -1, 1, addToList: result);
+        }
+
+        return result;
     }
 
     private void OnMouseDown()
@@ -95,93 +195,13 @@ public class PieceController : MonoBehaviour
         // Ставим выделение на данную фигуру
         selectedPiece = gameObject;
 
-        // Координаты
-        float x = transform.position.x;
-        float y = transform.position.y;
-
-        // Белая пешка
-        if(gameObject.CompareTag("pawn") && gameObject.name.StartsWith("white"))
+        // Ставим метки на клетки в которые можно ходить
+        List<Vector2> moveCells = GetMoveCells();
+        foreach(Vector2 cellCoords in moveCells)
         {
-            PlaceLegalMoveCell(x, y + 1);
-            if(moveCount == 0 && GetFigureAtCell(x, y + 1) == null)
-            {
-                PlaceLegalMoveCell(x, y + 2);
-            }
-            PlaceLegalMoveCell(x - 1, y - 1, "black", false);
-            PlaceLegalMoveCell(x - 1, y + 1, "black", false);
-            PlaceLegalMoveCell(x + 1, y - 1, "black", false);
-            PlaceLegalMoveCell(x + 1, y + 1, "black", false);
-        }
-
-        // Черная пешка
-        if(gameObject.CompareTag("pawn") && gameObject.name.StartsWith("black"))
-        {
-            PlaceLegalMoveCell(x, y - 1);
-            if(moveCount == 0 && GetFigureAtCell(x, y - 1) == null)
-            {
-                PlaceLegalMoveCell(x, y - 2);
-            }
-            PlaceLegalMoveCell(x - 1, y - 1, "white", false);
-            PlaceLegalMoveCell(x - 1, y + 1, "white", false);
-            PlaceLegalMoveCell(x + 1, y - 1, "white", false);
-            PlaceLegalMoveCell(x + 1, y + 1, "white", false);
-        }
-
-        // Ладья
-        if(gameObject.CompareTag("rook"))
-        {
-            PlaceLegalMoveCellLine(x, y, 0, 1);
-            PlaceLegalMoveCellLine(x, y, 1, 0);
-            PlaceLegalMoveCellLine(x, y, 0, -1);
-            PlaceLegalMoveCellLine(x, y, -1, 0);
-        }
-
-        // Конь
-        if(gameObject.CompareTag("knight"))
-        {
-            PlaceLegalMoveCell(x - 1, y + 2, GetOppositeName());
-            PlaceLegalMoveCell(x + 1, y + 2, GetOppositeName());
-            PlaceLegalMoveCell(x + 2, y - 1, GetOppositeName());
-            PlaceLegalMoveCell(x + 2, y + 1, GetOppositeName());
-            PlaceLegalMoveCell(x - 1, y - 2, GetOppositeName());
-            PlaceLegalMoveCell(x + 1, y - 2, GetOppositeName());
-            PlaceLegalMoveCell(x - 2, y + 1, GetOppositeName());
-            PlaceLegalMoveCell(x - 2, y - 1, GetOppositeName());
-        }
-
-        // Слон
-        if(gameObject.CompareTag("bishop"))
-        {
-            PlaceLegalMoveCellLine(x, y, 1, 1);
-            PlaceLegalMoveCellLine(x, y, 1, -1);
-            PlaceLegalMoveCellLine(x, y, -1, -1);
-            PlaceLegalMoveCellLine(x, y, -1, 1);
-        }
-
-        // Король
-        if(gameObject.CompareTag("king"))
-        {
-            PlaceLegalMoveCell(x - 1, y - 1, GetOppositeName());
-            PlaceLegalMoveCell(x - 1, y + 0, GetOppositeName());
-            PlaceLegalMoveCell(x - 1, y + 1, GetOppositeName());
-            PlaceLegalMoveCell(x + 0, y + 1, GetOppositeName());
-            PlaceLegalMoveCell(x + 1, y + 1, GetOppositeName());
-            PlaceLegalMoveCell(x + 1, y + 0, GetOppositeName());
-            PlaceLegalMoveCell(x + 1, y - 1, GetOppositeName());
-            PlaceLegalMoveCell(x + 0, y - 1, GetOppositeName());
-        }
-
-        // Ферзь
-        if(gameObject.CompareTag("queen"))
-        {
-            PlaceLegalMoveCellLine(x, y, 0, 1);
-            PlaceLegalMoveCellLine(x, y, 1, 0);
-            PlaceLegalMoveCellLine(x, y, 0, -1);
-            PlaceLegalMoveCellLine(x, y, -1, 0);
-            PlaceLegalMoveCellLine(x, y, 1, 1);
-            PlaceLegalMoveCellLine(x, y, 1, -1);
-            PlaceLegalMoveCellLine(x, y, -1, -1);
-            PlaceLegalMoveCellLine(x, y, -1, 1);
+            GameObject newObject = Instantiate(gameController.legalMoveCell, new Vector3(cellCoords.x, cellCoords.y), Quaternion.identity);
+            newObject.GetComponent<LegalMoveController>().piece = transform;
+            legalMoveCells.Add(newObject);
         }
 
     }
