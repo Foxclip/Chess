@@ -35,7 +35,7 @@ public class PieceController : MonoBehaviour
         return null;
     }
 
-    private bool PlaceLegalMoveCell(float x, float y, string takePieces = "", bool freeMove = true, bool createCell = true, List<Vector2> addToList = null)
+    private bool PlaceLegalMoveCell(float x, float y, string takePieces = "", bool freeMove = true, List<Vector2> addToList = null)
     {
         Transform figureAtCell = GetFigureAtCell(x, y);
         bool inBounds = x >= 0 && x < 8 && y >= 0 && y < 8;
@@ -52,10 +52,10 @@ public class PieceController : MonoBehaviour
         return false;
     }
 
-    private void PlaceLegalMoveCellLine(float x, float y, int p_xOffset, int p_yOffset, bool createCell = true, List<Vector2> addToList = null)
+    private void PlaceLegalMoveCellLine(float x, float y, int p_xOffset, int p_yOffset, List<Vector2> addToList = null)
     {
         for(float xOffset = p_xOffset, yOffset = p_yOffset;
-            PlaceLegalMoveCell(x + xOffset, y + yOffset, takePieces: GetOppositeName(), createCell: createCell, addToList: addToList);
+            PlaceLegalMoveCell(x + xOffset, y + yOffset, takePieces: GetOppositeName(), addToList: addToList);
             xOffset += p_xOffset, yOffset += p_yOffset
         )
         {
