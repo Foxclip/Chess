@@ -100,9 +100,7 @@ public class PieceController : MonoBehaviour
             {
                 PlaceLegalMoveCell(x, y + 2, addToList: result);
             }
-            PlaceLegalMoveCell(x - 1, y - 1, "black", false, addToList: result);
             PlaceLegalMoveCell(x - 1, y + 1, "black", false, addToList: result);
-            PlaceLegalMoveCell(x + 1, y - 1, "black", false, addToList: result);
             PlaceLegalMoveCell(x + 1, y + 1, "black", false, addToList: result);
         }
 
@@ -115,9 +113,7 @@ public class PieceController : MonoBehaviour
                 PlaceLegalMoveCell(x, y - 2, addToList: result);
             }
             PlaceLegalMoveCell(x - 1, y - 1, "white", false, addToList: result);
-            PlaceLegalMoveCell(x - 1, y + 1, "white", false, addToList: result);
             PlaceLegalMoveCell(x + 1, y - 1, "white", false, addToList: result);
-            PlaceLegalMoveCell(x + 1, y + 1, "white", false, addToList: result);
         }
 
         // Ладья
