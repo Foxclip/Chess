@@ -4,12 +4,16 @@ using UnityEngine;
 
 public class PieceController : MonoBehaviour
 {
+    [HideInInspector]
+    public int moveCount = 0;
+    [HideInInspector]
+    public List<Vector2> kingLegalMoves = null;
 
     private static GameController gameController;
     private static readonly List<GameObject> legalMoveCells = new List<GameObject>();
     private static GameObject selectedPiece = null;
 
-    public int moveCount = 0;
+
 
     // Start is called before the first frame update
     void Start()
@@ -55,7 +59,7 @@ public class PieceController : MonoBehaviour
     private void PlaceLegalMoveCellLine(float x, float y, int p_xOffset, int p_yOffset, List<Vector2> addToList = null)
     {
         for(float xOffset = p_xOffset, yOffset = p_yOffset;
-            PlaceLegalMoveCell(x + xOffset, y + yOffset, takePieces: GetOppositeName(), addToList: addToList);
+            PlaceLegalMoveCell(x + xOffset, y + yOffset, takePieces: GetEnemyNamePrefix(), addToList: addToList);
             xOffset += p_xOffset, yOffset += p_yOffset
         )
         {
@@ -78,12 +82,17 @@ public class PieceController : MonoBehaviour
         }
     }
 
-    private string GetOppositeName()
+    public string GetNamePrefix()
+    {
+        return transform.name.StartsWith("white") ? "white" : "black";
+    }
+
+    public string GetEnemyNamePrefix()
     {
         return transform.name.StartsWith("white") ? "black" : "white";
     }
 
-    private List<Vector2> GetMoveCells()
+    public List<Vector2> GetMoveCells()
     {
 
         List<Vector2> result = new List<Vector2>();
@@ -128,14 +137,14 @@ public class PieceController : MonoBehaviour
         // Конь
         if(gameObject.CompareTag("knight"))
         {
-            PlaceLegalMoveCell(x - 1, y + 2, GetOppositeName(), addToList: result);
-            PlaceLegalMoveCell(x + 1, y + 2, GetOppositeName(), addToList: result);
-            PlaceLegalMoveCell(x + 2, y - 1, GetOppositeName(), addToList: result);
-            PlaceLegalMoveCell(x + 2, y + 1, GetOppositeName(), addToList: result);
-            PlaceLegalMoveCell(x - 1, y - 2, GetOppositeName(), addToList: result);
-            PlaceLegalMoveCell(x + 1, y - 2, GetOppositeName(), addToList: result);
-            PlaceLegalMoveCell(x - 2, y + 1, GetOppositeName(), addToList: result);
-            PlaceLegalMoveCell(x - 2, y - 1, GetOppositeName(), addToList: result);
+            PlaceLegalMoveCell(x - 1, y + 2, GetEnemyNamePrefix(), addToList: result);
+            PlaceLegalMoveCell(x + 1, y + 2, GetEnemyNamePrefix(), addToList: result);
+            PlaceLegalMoveCell(x + 2, y - 1, GetEnemyNamePrefix(), addToList: result);
+            PlaceLegalMoveCell(x + 2, y + 1, GetEnemyNamePrefix(), addToList: result);
+            PlaceLegalMoveCell(x - 1, y - 2, GetEnemyNamePrefix(), addToList: result);
+            PlaceLegalMoveCell(x + 1, y - 2, GetEnemyNamePrefix(), addToList: result);
+            PlaceLegalMoveCell(x - 2, y + 1, GetEnemyNamePrefix(), addToList: result);
+            PlaceLegalMoveCell(x - 2, y - 1, GetEnemyNamePrefix(), addToList: result);
         }
 
         // Слон
@@ -150,14 +159,14 @@ public class PieceController : MonoBehaviour
         // Король
         if(gameObject.CompareTag("king"))
         {
-            PlaceLegalMoveCell(x - 1, y - 1, GetOppositeName(), addToList: result);
-            PlaceLegalMoveCell(x - 1, y + 0, GetOppositeName(), addToList: result);
-            PlaceLegalMoveCell(x - 1, y + 1, GetOppositeName(), addToList: result);
-            PlaceLegalMoveCell(x + 0, y + 1, GetOppositeName(), addToList: result);
-            PlaceLegalMoveCell(x + 1, y + 1, GetOppositeName(), addToList: result);
-            PlaceLegalMoveCell(x + 1, y + 0, GetOppositeName(), addToList: result);
-            PlaceLegalMoveCell(x + 1, y - 1, GetOppositeName(), addToList: result);
-            PlaceLegalMoveCell(x + 0, y - 1, GetOppositeName(), addToList: result);
+            PlaceLegalMoveCell(x - 1, y - 1, GetEnemyNamePrefix(), addToList: result);
+            PlaceLegalMoveCell(x - 1, y + 0, GetEnemyNamePrefix(), addToList: result);
+            PlaceLegalMoveCell(x - 1, y + 1, GetEnemyNamePrefix(), addToList: result);
+            PlaceLegalMoveCell(x + 0, y + 1, GetEnemyNamePrefix(), addToList: result);
+            PlaceLegalMoveCell(x + 1, y + 1, GetEnemyNamePrefix(), addToList: result);
+            PlaceLegalMoveCell(x + 1, y + 0, GetEnemyNamePrefix(), addToList: result);
+            PlaceLegalMoveCell(x + 1, y - 1, GetEnemyNamePrefix(), addToList: result);
+            PlaceLegalMoveCell(x + 0, y - 1, GetEnemyNamePrefix(), addToList: result);
         }
 
         // Ферзь
