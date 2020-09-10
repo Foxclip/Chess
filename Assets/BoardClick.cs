@@ -17,7 +17,6 @@ public class BoardClick : MonoBehaviour
 
     private void OnMouseDown()
     {
-        Debug.Log("BOARD CLICK");
         PieceController.ClearSelection();
     }
 
