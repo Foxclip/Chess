@@ -70,7 +70,7 @@ public abstract class Figure
         return color.Equals("white") ? "black" : "white";
     }
 
-    public void TestCell(int x, int y, bool freeMove = true, bool takePieces = false)
+    public void TestCell(int x, int y, bool freeMove = true, bool takePieces = true)
     {
         Figure figureAtCell = boardState.GetFigureAtCell(x, y);
         bool inBounds = BoardState.CoordinatesInBounds(x, y);
@@ -133,13 +133,13 @@ public class Pawn: Figure
         tempLegalMoveCells.Clear();
         int direction = color.Equals("white") ? 1 : -1;
 
-        TestCell(x, y + direction);
+        TestCell(x, y + direction, takePieces: false);
         if(moveCount == 0 && boardState.GetFigureAtCell(x, y + direction) == null)
         {
-            TestCell(x, y + direction * 2);
+            TestCell(x, y + direction * 2, takePieces: false);
         }
-        TestCell(x - 1, y + direction, freeMove: false, takePieces: true);
-        TestCell(x + 1, y + direction, freeMove: false, takePieces: true);
+        TestCell(x - 1, y + direction, freeMove: false);
+        TestCell(x + 1, y + direction, freeMove: false);
 
         return tempLegalMoveCells;
     }
