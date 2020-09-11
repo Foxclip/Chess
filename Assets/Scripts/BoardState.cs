@@ -7,8 +7,8 @@ using UnityEngine;
 
 public abstract class Figure
 {
-    public int x;
-    public int y;
+    protected int x;
+    protected int y;
     public GameObject gameObject;
     public string color;
     public BoardState boardState;
@@ -32,6 +32,7 @@ public abstract class Figure
         this.y = y;
         this.color = color;
         this.boardState = boardState ?? throw new ArgumentNullException("boardState");
+        boardState.SetFigureAtCell(x, y, this);
     }
 
     public void Move(int newX, int newY)
@@ -94,7 +95,9 @@ public abstract class Figure
             int cellX = x + xOffset;
             int cellY = y + yOffset;
             TestCell(cellX, cellY, takePieces: true);
-            if(boardState.GetFigureAtCell(cellX, cellY) != null)
+            bool ranIntoAFigure = boardState.GetFigureAtCell(cellX, cellY) != null;
+            bool ranOutOfBounds = !BoardState.CoordinatesInBounds(cellX, cellY);
+            if(ranIntoAFigure || ranOutOfBounds)
             {
                 break;
             }
@@ -275,16 +278,34 @@ public class BoardState
         // Белые пешки
         for(int x = 0; x < 8; x++)
         {
-            Pawn newPawn = new Pawn(x, 1, color: "white", boardState: this, createGameObject: true);
-            board[newPawn.x, newPawn.y] = newPawn;
+            new Pawn(x, 1, "white", this, true);
         }
         // Черные пешки
         for(int x = 0; x < 8; x++)
         {
-            Pawn newPawn = new Pawn(x, 6, color: "black", boardState: this, createGameObject: true);
-            board[newPawn.x, newPawn.y] = newPawn;
+            new Pawn(x, 6, "black", this, true);
         }
-
+        // Ладьи
+        new Rook(0, 0, "white", this, true);
+        new Rook(7, 0, "white", this, true);
+        new Rook(0, 7, "black", this, true);
+        new Rook(7, 7, "black", this, true);
+        // Кони
+        new Knight(1, 0, "white", this, true);
+        new Knight(6, 0, "white", this, true);
+        new Knight(1, 7, "black", this, true);
+        new Knight(6, 7, "black", this, true);
+        // Слоны
+        new Bishop(2, 0, "white", this, true);
+        new Bishop(5, 0, "white", this, true);
+        new Bishop(2, 7, "black", this, true);
+        new Bishop(5, 7, "black", this, true);
+        // Короли
+        new King(3, 0, "white", this, true);
+        new King(3, 7, "black", this, true);
+        // Ферзи
+        new Queen(4, 0, "white", this, true);
+        new Queen(4, 7, "black", this, true);
     }
 
     public static bool CoordinatesInBounds(int x, int y)
