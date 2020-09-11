@@ -34,21 +34,28 @@ public abstract class Figure
         this.boardState = boardState ?? throw new ArgumentNullException("boardState");
     }
 
-    public void Move(int x, int y)
+    public void Move(int newX, int newY)
     {
         if(!BoardState.CoordinatesInBounds(x, y))
         {
             throw new ArgumentOutOfRangeException("Нельзя передвинуть фигуру за пределы доски");
         }
-        this.x = x;
-        this.y = y;
+        // Изменяем параметры фигуры
+        int oldX = x;
+        int oldY = y;
+        x = newX;
+        y = newY;
         gameObject.transform.position = new Vector3(x, y);
         moveCount++;
+        // Если в клетке уже есть фигура
         Figure figureAtCell = boardState.GetFigureAtCell(x, y);
         if(figureAtCell != null)
         {
             figureAtCell.Delete();
         }
+        // Изменяем состояние доски
+        boardState.SetFigureAtCell(oldX, oldY, null);
+        boardState.SetFigureAtCell(newX, newY, this);
     }
 
     public void Delete()
