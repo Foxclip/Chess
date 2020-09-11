@@ -20,14 +20,26 @@ public abstract class Figure
 
     public Figure(int x, int y, string color, BoardState boardState)
     {
+        if(!BoardState.CoordinatesInBounds(x, y))
+        {
+            throw new ArgumentOutOfRangeException("Нельзя создать фигуру за пределами доски");
+        }
+        if(!color.Equals("white") && !color.Equals("black"))
+        {
+            throw new ArgumentOutOfRangeException("Цвет фигуры должен быть white или black");
+        }
         this.x = x;
         this.y = y;
         this.color = color;
-        this.boardState = boardState;
+        this.boardState = boardState ?? throw new ArgumentNullException("boardState");
     }
 
     public void Move(int x, int y)
     {
+        if(!BoardState.CoordinatesInBounds(x, y))
+        {
+            throw new ArgumentOutOfRangeException("Нельзя передвинуть фигуру за пределы доски");
+        }
         this.x = x;
         this.y = y;
         gameObject.transform.position = new Vector3(x, y);
@@ -53,7 +65,7 @@ public abstract class Figure
     public void TestCell(int x, int y, bool freeMove = true, bool takePieces = false)
     {
         Figure figureAtCell = boardState.GetFigureAtCell(x, y);
-        bool inBounds = x >= 0 && x < 8 && y >= 0 && y < 8;
+        bool inBounds = BoardState.CoordinatesInBounds(x, y);
         bool canFreeMove = freeMove && figureAtCell == null;
         bool canTakePiece = takePieces && figureAtCell != null && figureAtCell.color.Equals(GetEnemyColor());
         if((canFreeMove || canTakePiece) && inBounds)
@@ -66,7 +78,7 @@ public abstract class Figure
     {
         if(directionX > 1 || directionX < -1 || directionY > 1 || directionX < -1)
         {
-            throw new ArgumentException("Направление может принимать значения -1, 0 или 1");
+            throw new ArgumentOutOfRangeException("Направление может принимать значения -1, 0 или 1");
         }
         for(int offset = 1; ; offset++)
         {
@@ -86,7 +98,7 @@ public abstract class Figure
     {
         if(gameObject != null)
         {
-            throw new Exception("GameObject уже загружен");
+            throw new InvalidOperationException("GameObject уже загружен");
         }
         gameObject = UnityEngine.Object.Instantiate(Resources.Load(name)) as GameObject;
         gameObject.transform.position = new Vector3(x, y);
@@ -253,23 +265,37 @@ public class BoardState
 
     public BoardState()
     {
-        // Создание белых пешек
+        // Белые пешки
         for(int x = 0; x < 8; x++)
         {
             Pawn newPawn = new Pawn(x, 1, color: "white", boardState: this, createGameObject: true);
             board[newPawn.x, newPawn.y] = newPawn;
         }
+        // Черные пешки
+        for(int x = 0; x < 8; x++)
+        {
+            Pawn newPawn = new Pawn(x, 6, color: "black", boardState: this, createGameObject: true);
+            board[newPawn.x, newPawn.y] = newPawn;
+        }
 
+    }
+
+    public static bool CoordinatesInBounds(int x, int y)
+    {
+        return x >= 0 && x < 8 && y >= 0 && y < 8;
     }
 
     public Figure GetFigureAtCell(int x, int y)
     {
-        bool inBounds = x >= 0 && x < 8 && y >= 0 && y < 8;
-        return inBounds ? board[x, y] : null;
+        return CoordinatesInBounds(x, y) ? board[x, y] : null;
     }
 
     public void SetFigureAtCell(int x, int y, Figure figure)
     {
+        if(!CoordinatesInBounds(x, y))
+        {
+            throw new ArgumentOutOfRangeException("Координаты за пределами доски");
+        }
         board[x, y] = figure;
     }
 
