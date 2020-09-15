@@ -6,23 +6,30 @@ using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using System.Linq;
 
-public enum CheckState
+public struct FigureMove
 {
-    None,
-    Check,
-    Mate
+    public Vector2Int from;
+    public Vector2Int to;
+
+    public FigureMove(Vector2Int from, Vector2Int to)
+    {
+        this.from = from;
+        this.to = to;
+    }
 }
 
 public abstract class Figure
 {
     public int x;
     public int y;
+    public Vector2Int Pos { get => new Vector2Int(x, y); }
     public GameObject gameObject;
     public string color;
     public BoardState boardState;
     public int moveCount = 0;
 
     protected List<Vector2Int> tempLegalMoveCells = new List<Vector2Int>();
+
 
     public abstract List<Vector2Int> GetMoveCells();
 
@@ -43,6 +50,13 @@ public abstract class Figure
         boardState.SetFigureAtCell(x, y, this);
     }
 
+    public Figure Copy(BoardState boardState)
+    {
+        Figure copy = (Figure)GetType().GetConstructors()[0].Invoke(new object[] { x, y, color, boardState, false });
+        copy.moveCount = moveCount;
+        return copy;
+    }
+
     public void Move(int newX, int newY)
     {
         if(!BoardState.CoordinatesInBounds(x, y))
@@ -54,7 +68,10 @@ public abstract class Figure
         int oldY = y;
         x = newX;
         y = newY;
-        gameObject.transform.position = new Vector3(x, y);
+        if(gameObject != null)
+        {
+            gameObject.transform.position = new Vector3(x, y);
+        }
         moveCount++;
         // Если в клетке уже есть фигура
         Figure figureAtCell = boardState.GetFigureAtCell(x, y);
@@ -67,9 +84,17 @@ public abstract class Figure
         boardState.SetFigureAtCell(newX, newY, this);
     }
 
+    public void Move(Vector2Int cell)
+    {
+        Move(cell.x, cell.y);
+    }
+
     public void Delete()
     {
-        UnityEngine.Object.Destroy(gameObject);
+        if(gameObject != null)
+        {
+            UnityEngine.Object.Destroy(gameObject);
+        }
         boardState.SetFigureAtCell(x, y, null);
     }
 
@@ -280,6 +305,7 @@ public class BoardState
 {
 
     private readonly Figure[,] board = new Figure[8, 8];
+    public readonly List<FigureMove> legalMoves = new List<FigureMove>();
 
     public BoardState()
     {
@@ -316,6 +342,21 @@ public class BoardState
         new Queen(4, 7, "black", this, true);
     }
 
+    public BoardState(BoardState original)
+    {
+        board = new Figure[8, 8];
+        for(int x = 0; x < 8; x++)
+        {
+            for(int y = 0; y < 8; y++)
+            {
+                if(original.board[x, y] != null)
+                {
+                    board[x, y] = original.board[x, y].Copy(this);
+                }
+            }
+        }
+    }
+
     public static bool CoordinatesInBounds(int x, int y)
     {
         return x >= 0 && x < 8 && y >= 0 && y < 8;
@@ -324,6 +365,11 @@ public class BoardState
     public Figure GetFigureAtCell(int x, int y)
     {
         return CoordinatesInBounds(x, y) ? board[x, y] : null;
+    }
+
+    public Figure GetFigureAtCell(Vector2Int cell)
+    {
+        return GetFigureAtCell(cell.x, cell.y);
     }
 
     public void SetFigureAtCell(int x, int y, Figure figure)
@@ -335,9 +381,8 @@ public class BoardState
         board[x, y] = figure;
     }
 
-    public CheckState DetectMate(string color)
+    public bool DetectCheck(string color)
     {
-        Debug.Log("DetectMate");
         string enemyColor = color.Equals("black") ? "white" : "black";
         // Получаем фигуры
         List<Figure> figures = (from Figure figure in board where figure != null select figure).ToList();
@@ -346,14 +391,6 @@ public class BoardState
         King king = (King)(from Figure figure in ownFigures where figure.GetType() == typeof(King) select figure).First();
         // Ходы короля
         List<Vector2Int> kingMoves = king.GetMoveCells();
-        // Ходы своих фигур
-        List<Vector2Int> ownMoves = new List<Vector2Int>();
-        foreach(Figure figure in ownFigures)
-        {
-            List<Vector2Int> moves = figure.GetMoveCells();
-            ownMoves = ownMoves.Concat(moves).ToList();
-        }
-        ownMoves = ownMoves.Distinct().ToList();
         // Ходы вражеских фигур
         List<Vector2Int> enemyMoves = new List<Vector2Int>();
         foreach(Figure figure in enemyFigures)
@@ -363,12 +400,43 @@ public class BoardState
         }
         enemyMoves = enemyMoves.Distinct().ToList();
         // Определение шаха
-        if(enemyMoves.Contains(new Vector2Int(king.x, king.y)))
+        return enemyMoves.Contains(new Vector2Int(king.x, king.y));
+    }
+
+    public bool DetectMate()
+    {
+        // Определение мата
+        return legalMoves.Count == 0;
+    }
+
+    public void UpdateLegalMoves(string color)
+    {
+        legalMoves.Clear();
+        // Получаем фигуры
+        List<Figure> figures = (from Figure figure in board where figure != null select figure).ToList();
+        List<Figure> ownFigures = (from Figure figure in figures where figure.color == color select figure).ToList();
+        // Получаем свои ходы
+        List<FigureMove> ownMoves = new List<FigureMove>();
+        foreach(Figure figure in ownFigures)
         {
-            Debug.Log($"CHECK TO {color} KING");
-            return CheckState.Check;
+            List<Vector2Int> moves = figure.GetMoveCells();
+            foreach(Vector2Int move in moves)
+            {
+                ownMoves.Add(new FigureMove(figure.Pos, move));
+            }
         }
-        return CheckState.None;
+        ownMoves = ownMoves.Distinct().ToList();
+        // Пытаемся сделать ход
+        foreach(FigureMove ownMove in ownMoves)
+        {
+            BoardState virtualBoard = new BoardState(this);
+            Figure figure = virtualBoard.GetFigureAtCell(ownMove.from);
+            figure.Move(ownMove.to);
+            if(!virtualBoard.DetectCheck(color))
+            {
+                legalMoves.Add(ownMove);
+            }
+        }
     }
 
 }

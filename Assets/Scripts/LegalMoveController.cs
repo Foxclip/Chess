@@ -23,14 +23,24 @@ public class LegalMoveController : MonoBehaviour
 
     private void OnMouseDown()
     {
-        // Перемещение фигуры
         PieceController pieceController = piece.GetComponent<PieceController>();
+        string enemyColor = pieceController.boardStateFigure.GetEnemyColor();
+
+        // Перемещение фигуры
         pieceController.boardStateFigure.Move((int)transform.position.x, (int)transform.position.y);
+        gameController.board.UpdateLegalMoves(enemyColor);
+        Debug.Log($"{enemyColor} has {gameController.board.legalMoves.Count()} moves");
         PieceController.ClearSelection();
 
         // Шах
-        gameController.board.DetectMate(pieceController.boardStateFigure.GetEnemyColor());
-
+        if(gameController.board.DetectCheck(enemyColor))
+        {
+            Debug.Log($"CHECK TO {enemyColor} KING");
+        }
+        if(gameController.board.DetectMate())
+        {
+            Debug.Log($"MATE TO {enemyColor} KING");
+        }
     }
 
 }
