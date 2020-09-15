@@ -8,7 +8,8 @@ public class GameController : MonoBehaviour
     public Transform pieces;
     public GameObject legalMoveCell;
 
-    private BoardState board;
+    [HideInInspector]
+    public BoardState board;
 
     // Start is called before the first frame update
     void Start()

@@ -7,11 +7,12 @@ public class LegalMoveController : MonoBehaviour
 {
 
     public Transform piece;
+    private GameController gameController;
 
     // Start is called before the first frame update
     void Start()
     {
-        
+        gameController = GameObject.Find("GameController").GetComponent<GameController>();
     }
 
     // Update is called once per frame
@@ -27,37 +28,9 @@ public class LegalMoveController : MonoBehaviour
         pieceController.boardStateFigure.Move((int)transform.position.x, (int)transform.position.y);
         PieceController.ClearSelection();
 
-        //// Определение того, был ли поставлен шах вражескому королю
+        // Шах
+        gameController.board.DetectMate(pieceController.boardStateFigure.GetEnemyColor());
 
-        //// Ходы короля
-        //string namePrefix = piece.GetComponent<PieceController>().GetEnemyNamePrefix();
-        //GameObject enemyKing = GameObject.Find(namePrefix + "_king");
-        //PieceController enemyKingPieceController = enemyKing.GetComponent<PieceController>();
-        //List<Vector2> enemyKingMoves = enemyKingPieceController.GetMoveCells();
-
-        //// Ходы своих фигур
-        //Transform pieces = GameObject.Find("pieces").transform;
-        //string ownPrefix = piece.GetComponent<PieceController>().GetNamePrefix();
-        //var ownPieces = from Transform piece
-        //                in pieces
-        //                where piece.name.StartsWith(ownPrefix)
-        //                select piece;
-        //List<Vector2> ownMoves = new List<Vector2>();
-        //foreach(Transform piece in ownPieces)
-        //{
-        //    ownMoves.AddRange(piece.GetComponent<PieceController>().GetMoveCells());
-        //}
-
-        //// Определение шаха
-        //if(ownMoves.Contains(enemyKing.transform.position))
-        //{
-        //    Debug.Log($"Check to {enemyKingPieceController.GetNamePrefix()} king");
-        //}
-
-        //// Определение оставшихся ходов короля
-        //enemyKingMoves.RemoveAll((kingMove) => ownMoves.Contains(kingMove));
-        //List<Vector2> kingLegalMoves = enemyKingMoves;
-        //enemyKingPieceController.kingLegalMoves = kingLegalMoves;
     }
 
 }

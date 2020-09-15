@@ -4,19 +4,27 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
+using System.Linq;
+
+public enum CheckState
+{
+    None,
+    Check,
+    Mate
+}
 
 public abstract class Figure
 {
-    protected int x;
-    protected int y;
+    public int x;
+    public int y;
     public GameObject gameObject;
     public string color;
     public BoardState boardState;
     public int moveCount = 0;
 
-    protected List<(int, int)> tempLegalMoveCells = new List<(int, int)>();
+    protected List<Vector2Int> tempLegalMoveCells = new List<Vector2Int>();
 
-    public abstract List<(int, int)> GetMoveCells();
+    public abstract List<Vector2Int> GetMoveCells();
 
     public Figure(int x, int y, string color, BoardState boardState)
     {
@@ -78,7 +86,7 @@ public abstract class Figure
         bool canTakePiece = takePieces && figureAtCell != null && figureAtCell.color.Equals(GetEnemyColor());
         if((canFreeMove || canTakePiece) && inBounds)
         {
-            tempLegalMoveCells.Add((x, y));
+            tempLegalMoveCells.Add(new Vector2Int(x, y));
         }
     }
 
@@ -128,7 +136,7 @@ public class Pawn: Figure
         }
     }
 
-    public override List<(int, int)> GetMoveCells()
+    public override List<Vector2Int> GetMoveCells()
     {
         tempLegalMoveCells.Clear();
         int direction = color.Equals("white") ? 1 : -1;
@@ -156,7 +164,7 @@ public class Rook : Figure
         }
     }
 
-    public override List<(int, int)> GetMoveCells()
+    public override List<Vector2Int> GetMoveCells()
     {
         tempLegalMoveCells.Clear();
         TestDirection(0, 1);
@@ -178,7 +186,7 @@ public class Knight : Figure
         }
     }
 
-    public override List<(int, int)> GetMoveCells()
+    public override List<Vector2Int> GetMoveCells()
     {
         tempLegalMoveCells.Clear();
         TestCell(x - 1, y + 2);
@@ -204,7 +212,7 @@ public class Bishop : Figure
         }
     }
 
-    public override List<(int, int)> GetMoveCells()
+    public override List<Vector2Int> GetMoveCells()
     {
         tempLegalMoveCells.Clear();
         TestDirection(1, 1);
@@ -226,7 +234,7 @@ public class King : Figure
         }
     }
 
-    public override List<(int, int)> GetMoveCells()
+    public override List<Vector2Int> GetMoveCells()
     {
         tempLegalMoveCells.Clear();
         TestCell(x - 1, y - 1);
@@ -252,7 +260,7 @@ public class Queen : Figure
         }
     }
 
-    public override List<(int, int)> GetMoveCells()
+    public override List<Vector2Int> GetMoveCells()
     {
         tempLegalMoveCells.Clear();
         TestDirection(0, 1);
@@ -325,6 +333,42 @@ public class BoardState
             throw new ArgumentOutOfRangeException("Координаты за пределами доски");
         }
         board[x, y] = figure;
+    }
+
+    public CheckState DetectMate(string color)
+    {
+        Debug.Log("DetectMate");
+        string enemyColor = color.Equals("black") ? "white" : "black";
+        // Получаем фигуры
+        List<Figure> figures = (from Figure figure in board where figure != null select figure).ToList();
+        List<Figure> ownFigures = (from Figure figure in figures where figure.color == color select figure).ToList();
+        List<Figure> enemyFigures = (from Figure figure in figures where figure.color == enemyColor select figure).ToList();
+        King king = (King)(from Figure figure in ownFigures where figure.GetType() == typeof(King) select figure).First();
+        // Ходы короля
+        List<Vector2Int> kingMoves = king.GetMoveCells();
+        // Ходы своих фигур
+        List<Vector2Int> ownMoves = new List<Vector2Int>();
+        foreach(Figure figure in ownFigures)
+        {
+            List<Vector2Int> moves = figure.GetMoveCells();
+            ownMoves = ownMoves.Concat(moves).ToList();
+        }
+        ownMoves = ownMoves.Distinct().ToList();
+        // Ходы вражеских фигур
+        List<Vector2Int> enemyMoves = new List<Vector2Int>();
+        foreach(Figure figure in enemyFigures)
+        {
+            List<Vector2Int> moves = figure.GetMoveCells();
+            enemyMoves = enemyMoves.Concat(moves).ToList();
+        }
+        enemyMoves = enemyMoves.Distinct().ToList();
+        // Определение шаха
+        if(enemyMoves.Contains(new Vector2Int(king.x, king.y)))
+        {
+            Debug.Log($"CHECK TO {color} KING");
+            return CheckState.Check;
+        }
+        return CheckState.None;
     }
 
 }

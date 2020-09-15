@@ -56,10 +56,10 @@ public class PieceController : MonoBehaviour
         selectedPiece = gameObject;
 
         // Ставим метки на клетки в которые можно ходить
-        List<(int, int)> moveCells = boardStateFigure.GetMoveCells();
-        foreach((int, int) cellCoords in moveCells)
+        List<Vector2Int> moveCells = boardStateFigure.GetMoveCells();
+        foreach(Vector2Int cellCoords in moveCells)
         {
-            GameObject newObject = Instantiate(gameController.legalMoveCell, new Vector3(cellCoords.Item1, cellCoords.Item2), Quaternion.identity);
+            GameObject newObject = Instantiate(gameController.legalMoveCell, new Vector3(cellCoords.x, cellCoords.y), Quaternion.identity);
             newObject.GetComponent<LegalMoveController>().piece = transform;
             legalMoveCells.Add(newObject);
         }
