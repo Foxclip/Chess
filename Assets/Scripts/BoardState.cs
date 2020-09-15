@@ -31,7 +31,7 @@ public abstract class Figure
     protected List<Vector2Int> tempLegalMoveCells = new List<Vector2Int>();
 
 
-    public abstract List<Vector2Int> GetMoveCells();
+    public abstract List<Vector2Int> GetAllMoveCells();
 
     public Figure(int x, int y, string color, BoardState boardState)
     {
@@ -55,6 +55,14 @@ public abstract class Figure
         Figure copy = (Figure)GetType().GetConstructors()[0].Invoke(new object[] { x, y, color, boardState, false });
         copy.moveCount = moveCount;
         return copy;
+    }
+
+    public List<Vector2Int> GetLegalMoveCells()
+    {
+        List<Vector2Int> allMoveCells = GetAllMoveCells();
+        List<FigureMove> moves = boardState.legalMoves.FindAll((move) => move.from == Pos);
+        List<Vector2Int> moveCells = (from move in moves select move.to).ToList();
+        return moveCells;
     }
 
     public void Move(int newX, int newY)
@@ -161,7 +169,7 @@ public class Pawn: Figure
         }
     }
 
-    public override List<Vector2Int> GetMoveCells()
+    public override List<Vector2Int> GetAllMoveCells()
     {
         tempLegalMoveCells.Clear();
         int direction = color.Equals("white") ? 1 : -1;
@@ -189,7 +197,7 @@ public class Rook : Figure
         }
     }
 
-    public override List<Vector2Int> GetMoveCells()
+    public override List<Vector2Int> GetAllMoveCells()
     {
         tempLegalMoveCells.Clear();
         TestDirection(0, 1);
@@ -211,7 +219,7 @@ public class Knight : Figure
         }
     }
 
-    public override List<Vector2Int> GetMoveCells()
+    public override List<Vector2Int> GetAllMoveCells()
     {
         tempLegalMoveCells.Clear();
         TestCell(x - 1, y + 2);
@@ -237,7 +245,7 @@ public class Bishop : Figure
         }
     }
 
-    public override List<Vector2Int> GetMoveCells()
+    public override List<Vector2Int> GetAllMoveCells()
     {
         tempLegalMoveCells.Clear();
         TestDirection(1, 1);
@@ -259,7 +267,7 @@ public class King : Figure
         }
     }
 
-    public override List<Vector2Int> GetMoveCells()
+    public override List<Vector2Int> GetAllMoveCells()
     {
         tempLegalMoveCells.Clear();
         TestCell(x - 1, y - 1);
@@ -285,7 +293,7 @@ public class Queen : Figure
         }
     }
 
-    public override List<Vector2Int> GetMoveCells()
+    public override List<Vector2Int> GetAllMoveCells()
     {
         tempLegalMoveCells.Clear();
         TestDirection(0, 1);
@@ -340,6 +348,8 @@ public class BoardState
         // Ферзи
         new Queen(4, 0, "white", this, true);
         new Queen(4, 7, "black", this, true);
+
+        UpdateLegalMoves("white");
     }
 
     public BoardState(BoardState original)
@@ -390,12 +400,12 @@ public class BoardState
         List<Figure> enemyFigures = (from Figure figure in figures where figure.color == enemyColor select figure).ToList();
         King king = (King)(from Figure figure in ownFigures where figure.GetType() == typeof(King) select figure).First();
         // Ходы короля
-        List<Vector2Int> kingMoves = king.GetMoveCells();
+        List<Vector2Int> kingMoves = king.GetAllMoveCells();
         // Ходы вражеских фигур
         List<Vector2Int> enemyMoves = new List<Vector2Int>();
         foreach(Figure figure in enemyFigures)
         {
-            List<Vector2Int> moves = figure.GetMoveCells();
+            List<Vector2Int> moves = figure.GetAllMoveCells();
             enemyMoves = enemyMoves.Concat(moves).ToList();
         }
         enemyMoves = enemyMoves.Distinct().ToList();
@@ -419,7 +429,7 @@ public class BoardState
         List<FigureMove> ownMoves = new List<FigureMove>();
         foreach(Figure figure in ownFigures)
         {
-            List<Vector2Int> moves = figure.GetMoveCells();
+            List<Vector2Int> moves = figure.GetAllMoveCells();
             foreach(Vector2Int move in moves)
             {
                 ownMoves.Add(new FigureMove(figure.Pos, move));
