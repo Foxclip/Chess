@@ -1,9 +1,6 @@
-﻿using JetBrains.Annotations;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEditor.Experimental.GraphView;
-using UnityEngine;
 using System.Linq;
 
 public struct FigureMove
@@ -18,6 +15,43 @@ public struct FigureMove
     }
 }
 
+public struct Vector2Int
+{
+    public int x;
+    public int y;
+
+    public Vector2Int(int x, int y)
+    {
+        this.x = x;
+        this.y = y;
+    }
+
+    public override bool Equals(object obj)
+    {
+        return base.Equals(obj);
+    }
+
+    public override int GetHashCode()
+    {
+        return base.GetHashCode();
+    }
+
+    public override string ToString()
+    {
+        return base.ToString();
+    }
+
+    public static bool operator ==(Vector2Int one, Vector2Int another)
+    {
+        return (one.x == another.x) && (one.y == another.y);
+    }
+
+    public static bool operator!= (Vector2Int one, Vector2Int another)
+    {
+        return !(one == another);
+    }
+}
+
 public abstract class Figure
 {
 
@@ -26,11 +60,14 @@ public abstract class Figure
         white,
         black
     }
+    public delegate void VoidDelegate();
+    public delegate void IntIntVoidDelegate(int newX, int newY);
 
     public int x;
     public int y;
     public Vector2Int Pos { get => new Vector2Int(x, y); }
-    public GameObject gameObject;
+    public VoidDelegate deletedCallback;
+    public IntIntVoidDelegate movedCallback;
     public FigureColor color;
     public BoardState boardState;
     public int moveCount = 0;
@@ -59,7 +96,7 @@ public abstract class Figure
         {
             throw new ArgumentNullException("boardState");
         }
-        Figure copy = (Figure)GetType().GetConstructors()[0].Invoke(new object[] { x, y, color, boardState, false });
+        Figure copy = (Figure)GetType().GetConstructors()[0].Invoke(new object[] { x, y, color, boardState });
         copy.moveCount = moveCount;
         return copy;
     }
@@ -83,10 +120,7 @@ public abstract class Figure
         int oldY = y;
         x = newX;
         y = newY;
-        if(gameObject != null)
-        {
-            gameObject.transform.position = new Vector3(x, y);
-        }
+        movedCallback?.Invoke(x, y);
         moveCount++;
         // Если в клетке уже есть фигура
         Figure figureAtCell = boardState.GetFigureAtCell(x, y);
@@ -106,10 +140,7 @@ public abstract class Figure
 
     public void Delete()
     {
-        if(gameObject != null)
-        {
-            UnityEngine.Object.Destroy(gameObject);
-        }
+        deletedCallback?.Invoke();
         boardState.SetFigureAtCell(x, y, null);
     }
 
@@ -156,29 +187,12 @@ public abstract class Figure
             }
         }
     }
-
-    public void LoadGameObject(string name)
-    {
-        if(gameObject != null)
-        {
-            throw new InvalidOperationException("GameObject уже загружен");
-        }
-        gameObject = UnityEngine.Object.Instantiate(Resources.Load(name)) as GameObject;
-        gameObject.transform.position = new Vector3(x, y);
-        gameObject.transform.parent = GameObject.Find("pieces").transform;
-        PieceController pieceController = gameObject.GetComponent<PieceController>();
-        pieceController.boardStateFigure = this;
-    }
 }
 
 public class Pawn: Figure
 {
-    public Pawn(int x, int y, FigureColor color, BoardState boardState, bool createGameObject = false): base(x, y, color, boardState)
+    public Pawn(int x, int y, FigureColor color, BoardState boardState): base(x, y, color, boardState)
     {
-        if(createGameObject)
-        {
-            LoadGameObject($"{color}_pawn");
-        }
     }
 
     public override List<Vector2Int> GetAllMoveCells()
@@ -201,13 +215,7 @@ public class Pawn: Figure
 
 public class Rook : Figure
 {
-    public Rook(int x, int y, FigureColor color, BoardState boardState, bool createGameObject = false) : base(x, y, color, boardState)
-    {
-        if(createGameObject)
-        {
-            LoadGameObject($"{color}_rook");
-        }
-    }
+    public Rook(int x, int y, FigureColor color, BoardState boardState) : base(x, y, color, boardState) {}
 
     public override List<Vector2Int> GetAllMoveCells()
     {
@@ -223,13 +231,7 @@ public class Rook : Figure
 
 public class Knight : Figure
 {
-    public Knight(int x, int y, FigureColor color, BoardState boardState, bool createGameObject = false) : base(x, y, color, boardState)
-    {
-        if(createGameObject)
-        {
-            LoadGameObject($"{color}_knight");
-        }
-    }
+    public Knight(int x, int y, FigureColor color, BoardState boardState) : base(x, y, color, boardState) {}
 
     public override List<Vector2Int> GetAllMoveCells()
     {
@@ -249,13 +251,7 @@ public class Knight : Figure
 
 public class Bishop : Figure
 {
-    public Bishop(int x, int y, FigureColor color, BoardState boardState, bool createGameObject = false) : base(x, y, color, boardState)
-    {
-        if(createGameObject)
-        {
-            LoadGameObject($"{color}_bishop");
-        }
-    }
+    public Bishop(int x, int y, FigureColor color, BoardState boardState) : base(x, y, color, boardState) {}
 
     public override List<Vector2Int> GetAllMoveCells()
     {
@@ -271,13 +267,7 @@ public class Bishop : Figure
 
 public class King : Figure
 {
-    public King(int x, int y, FigureColor color, BoardState boardState, bool createGameObject = false) : base(x, y, color, boardState)
-    {
-        if(createGameObject)
-        {
-            LoadGameObject($"{color}_king");
-        }
-    }
+    public King(int x, int y, FigureColor color, BoardState boardState) : base(x, y, color, boardState) {}
 
     public override List<Vector2Int> GetAllMoveCells()
     {
@@ -297,13 +287,7 @@ public class King : Figure
 
 public class Queen : Figure
 {
-    public Queen(int x, int y, FigureColor color, BoardState boardState, bool createGameObject = false) : base(x, y, color, boardState)
-    {
-        if(createGameObject)
-        {
-            LoadGameObject($"{color}_queen");
-        }
-    }
+    public Queen(int x, int y, FigureColor color, BoardState boardState) : base(x, y, color, boardState) {}
 
     public override List<Vector2Int> GetAllMoveCells()
     {
@@ -318,7 +302,6 @@ public class Queen : Figure
         TestDirection(-1, 1);
         return tempLegalMoveCells;
     }
-
 }
 
 public class BoardState
@@ -335,34 +318,34 @@ public class BoardState
         // Белые пешки
         for(int x = 0; x < 8; x++)
         {
-            new Pawn(x, 1, white, this, true);
+            new Pawn(x, 1, white, this);
         }
         // Черные пешки
         for(int x = 0; x < 8; x++)
         {
-            new Pawn(x, 6, black, this, true);
+            new Pawn(x, 6, black, this);
         }
         // Ладьи
-        new Rook(0, 0, white, this, true);
-        new Rook(7, 0, white, this, true);
-        new Rook(0, 7, black, this, true);
-        new Rook(7, 7, black, this, true);
+        new Rook(0, 0, white, this);
+        new Rook(7, 0, white, this);
+        new Rook(0, 7, black, this);
+        new Rook(7, 7, black, this);
         // Кони
-        new Knight(1, 0, white, this, true);
-        new Knight(6, 0, white, this, true);
-        new Knight(1, 7, black, this, true);
-        new Knight(6, 7, black, this, true);
+        new Knight(1, 0, white, this);
+        new Knight(6, 0, white, this);
+        new Knight(1, 7, black, this);
+        new Knight(6, 7, black, this);
         // Слоны
-        new Bishop(2, 0, white, this, true);
-        new Bishop(5, 0, white, this, true);
-        new Bishop(2, 7, black, this, true);
-        new Bishop(5, 7, black, this, true);
+        new Bishop(2, 0, white, this);
+        new Bishop(5, 0, white, this);
+        new Bishop(2, 7, black, this);
+        new Bishop(5, 7, black, this);
         // Короли
-        new King(3, 0, white, this, true);
-        new King(3, 7, black, this, true);
+        new King(3, 0, white, this);
+        new King(3, 7, black, this);
         // Ферзи
-        new Queen(4, 0, white, this, true);
-        new Queen(4, 7, black, this, true);
+        new Queen(4, 0, white, this);
+        new Queen(4, 7, black, this);
 
         UpdateLegalMoves(white);
     }
@@ -406,11 +389,16 @@ public class BoardState
         board[x, y] = figure;
     }
 
+    public List<Figure> GetFigures()
+    {
+        return (from Figure figure in board where figure != null select figure).ToList();
+    }
+
     public bool DetectCheck(Figure.FigureColor color)
     {
         Figure.FigureColor enemyColor = Figure.InvertColor(color);
         // Получаем фигуры
-        List<Figure> figures = (from Figure figure in board where figure != null select figure).ToList();
+        List<Figure> figures = GetFigures();
         List<Figure> ownFigures = (from Figure figure in figures where figure.color == color select figure).ToList();
         List<Figure> enemyFigures = (from Figure figure in figures where figure.color == enemyColor select figure).ToList();
         King king = (King)(from Figure figure in ownFigures where figure.GetType() == typeof(King) select figure).First();
@@ -438,7 +426,7 @@ public class BoardState
     {
         legalMoves.Clear();
         // Получаем фигуры
-        List<Figure> figures = (from Figure figure in board where figure != null select figure).ToList();
+        List<Figure> figures = GetFigures();
         List<Figure> ownFigures = (from Figure figure in figures where figure.color == color select figure).ToList();
         // Получаем свои ходы
         List<FigureMove> ownMoves = new List<FigureMove>();

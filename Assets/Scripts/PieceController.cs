@@ -18,16 +18,10 @@ public class PieceController : MonoBehaviour
 
 
 
-    // Start is called before the first frame update
     void Start()
     {
         gameController = GameObject.Find("GameController").GetComponent<GameController>();
     }
-
-    //void Update()
-    //{
-        
-    //}
 
     public static void ClearSelection()
     {
@@ -39,6 +33,16 @@ public class PieceController : MonoBehaviour
                 Destroy(obj);
             }
         }
+    }
+
+    public void MovedCallback(int newX, int newY)
+    {
+        transform.position = new Vector3(newX, newY);
+    }
+
+    public void DeletedCallback()
+    {
+        Destroy(gameObject);
     }
 
     private void OnMouseDown()

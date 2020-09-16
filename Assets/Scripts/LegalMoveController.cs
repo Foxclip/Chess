@@ -9,7 +9,6 @@ public class LegalMoveController : MonoBehaviour
     public Transform piece;
     private GameController gameController;
 
-    // Start is called before the first frame update
     void Start()
     {
         gameController = GameObject.Find("GameController").GetComponent<GameController>();
@@ -22,16 +21,16 @@ public class LegalMoveController : MonoBehaviour
 
         // Перемещение фигуры
         pieceController.boardStateFigure.Move((int)transform.position.x, (int)transform.position.y);
-        gameController.board.UpdateLegalMoves(enemyColor);
-        Debug.Log($"{enemyColor} has {gameController.board.legalMoves.Count()} moves");
+        gameController.boardState.UpdateLegalMoves(enemyColor);
+        Debug.Log($"{enemyColor} has {gameController.boardState.legalMoves.Count()} moves");
         PieceController.ClearSelection();
 
         // Шах
-        if(gameController.board.DetectCheck(enemyColor))
+        if(gameController.boardState.DetectCheck(enemyColor))
         {
             Debug.Log($"CHECK TO {enemyColor} KING");
         }
-        if(gameController.board.DetectMate())
+        if(gameController.boardState.DetectMate())
         {
             Debug.Log($"MATE TO {enemyColor} KING");
         }
