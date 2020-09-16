@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 public class PieceController : MonoBehaviour
 {
@@ -12,7 +13,7 @@ public class PieceController : MonoBehaviour
     public Figure boardStateFigure;
 
     private static GameController gameController;
-    private static readonly List<GameObject> legalMoveCells = new List<GameObject>();
+    private static readonly List<GameObject> moveCells = new List<GameObject>();
     private static GameObject selectedPiece = null;
 
 
@@ -31,9 +32,9 @@ public class PieceController : MonoBehaviour
     public static void ClearSelection()
     {
         selectedPiece = null;
-        if(legalMoveCells != null)
+        if(moveCells != null)
         {
-            foreach(GameObject obj in legalMoveCells)
+            foreach(GameObject obj in moveCells)
             {
                 Destroy(obj);
             }
@@ -55,13 +56,21 @@ public class PieceController : MonoBehaviour
         // Ставим выделение на данную фигуру
         selectedPiece = gameObject;
 
+        List<Vector2Int> allMoveCells = boardStateFigure.GetAllMoveCells();
+        List<Vector2Int> legalMoveCells = boardStateFigure.GetLegalMoveCells();
+        List<Vector2Int> illegalMoveCells = allMoveCells.Except(legalMoveCells).ToList();
         // Ставим метки на клетки в которые можно ходить
-        List<Vector2Int> moveCells = boardStateFigure.GetLegalMoveCells();
-        foreach(Vector2Int cellCoords in moveCells)
+        foreach(Vector2Int cellCoords in legalMoveCells)
         {
             GameObject newObject = Instantiate(gameController.legalMoveCell, new Vector3(cellCoords.x, cellCoords.y), Quaternion.identity);
             newObject.GetComponent<LegalMoveController>().piece = transform;
-            legalMoveCells.Add(newObject);
+            moveCells.Add(newObject);
+        }
+        // И в которые нельзя из-за шаха
+        foreach(Vector2Int cellCoords in illegalMoveCells)
+        {
+            GameObject newObject = Instantiate(gameController.illegalMoveCell, new Vector3(cellCoords.x, cellCoords.y), Quaternion.identity);
+            moveCells.Add(newObject);
         }
 
     }

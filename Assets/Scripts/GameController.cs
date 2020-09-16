@@ -7,6 +7,7 @@ public class GameController : MonoBehaviour
 
     public Transform pieces;
     public GameObject legalMoveCell;
+    public GameObject illegalMoveCell;
 
     [HideInInspector]
     public BoardState board;
