@@ -20,11 +20,18 @@ public struct FigureMove
 
 public abstract class Figure
 {
+
+    public enum FigureColor
+    {
+        white,
+        black
+    }
+
     public int x;
     public int y;
     public Vector2Int Pos { get => new Vector2Int(x, y); }
     public GameObject gameObject;
-    public string color;
+    public FigureColor color;
     public BoardState boardState;
     public int moveCount = 0;
 
@@ -33,15 +40,11 @@ public abstract class Figure
 
     public abstract List<Vector2Int> GetAllMoveCells();
 
-    public Figure(int x, int y, string color, BoardState boardState)
+    public Figure(int x, int y, FigureColor color, BoardState boardState)
     {
         if(!BoardState.CoordinatesInBounds(x, y))
         {
             throw new ArgumentOutOfRangeException("Нельзя создать фигуру за пределами доски");
-        }
-        if(!color.Equals("white") && !color.Equals("black"))
-        {
-            throw new ArgumentOutOfRangeException("Цвет фигуры должен быть white или black");
         }
         this.x = x;
         this.y = y;
@@ -52,6 +55,10 @@ public abstract class Figure
 
     public Figure Copy(BoardState boardState)
     {
+        if(boardState == null)
+        {
+            throw new ArgumentNullException("boardState");
+        }
         Figure copy = (Figure)GetType().GetConstructors()[0].Invoke(new object[] { x, y, color, boardState, false });
         copy.moveCount = moveCount;
         return copy;
@@ -106,9 +113,14 @@ public abstract class Figure
         boardState.SetFigureAtCell(x, y, null);
     }
 
-    public string GetEnemyColor()
+    public static FigureColor InvertColor(FigureColor color)
     {
-        return color.Equals("white") ? "black" : "white";
+        return color == FigureColor.black ? FigureColor.white : FigureColor.black;
+    }
+
+    public FigureColor GetEnemyColor()
+    {
+        return InvertColor(color);
     }
 
     public void TestCell(int x, int y, bool freeMove = true, bool takePieces = true)
@@ -161,7 +173,7 @@ public abstract class Figure
 
 public class Pawn: Figure
 {
-    public Pawn(int x, int y, string color, BoardState boardState, bool createGameObject = false): base(x, y, color, boardState)
+    public Pawn(int x, int y, FigureColor color, BoardState boardState, bool createGameObject = false): base(x, y, color, boardState)
     {
         if(createGameObject)
         {
@@ -172,7 +184,7 @@ public class Pawn: Figure
     public override List<Vector2Int> GetAllMoveCells()
     {
         tempLegalMoveCells.Clear();
-        int direction = color.Equals("white") ? 1 : -1;
+        int direction = color == FigureColor.white ? 1 : -1;
 
         TestCell(x, y + direction, takePieces: false);
         if(moveCount == 0 && boardState.GetFigureAtCell(x, y + direction) == null)
@@ -189,7 +201,7 @@ public class Pawn: Figure
 
 public class Rook : Figure
 {
-    public Rook(int x, int y, string color, BoardState boardState, bool createGameObject = false) : base(x, y, color, boardState)
+    public Rook(int x, int y, FigureColor color, BoardState boardState, bool createGameObject = false) : base(x, y, color, boardState)
     {
         if(createGameObject)
         {
@@ -211,7 +223,7 @@ public class Rook : Figure
 
 public class Knight : Figure
 {
-    public Knight(int x, int y, string color, BoardState boardState, bool createGameObject = false) : base(x, y, color, boardState)
+    public Knight(int x, int y, FigureColor color, BoardState boardState, bool createGameObject = false) : base(x, y, color, boardState)
     {
         if(createGameObject)
         {
@@ -237,7 +249,7 @@ public class Knight : Figure
 
 public class Bishop : Figure
 {
-    public Bishop(int x, int y, string color, BoardState boardState, bool createGameObject = false) : base(x, y, color, boardState)
+    public Bishop(int x, int y, FigureColor color, BoardState boardState, bool createGameObject = false) : base(x, y, color, boardState)
     {
         if(createGameObject)
         {
@@ -259,7 +271,7 @@ public class Bishop : Figure
 
 public class King : Figure
 {
-    public King(int x, int y, string color, BoardState boardState, bool createGameObject = false) : base(x, y, color, boardState)
+    public King(int x, int y, FigureColor color, BoardState boardState, bool createGameObject = false) : base(x, y, color, boardState)
     {
         if(createGameObject)
         {
@@ -285,7 +297,7 @@ public class King : Figure
 
 public class Queen : Figure
 {
-    public Queen(int x, int y, string color, BoardState boardState, bool createGameObject = false) : base(x, y, color, boardState)
+    public Queen(int x, int y, FigureColor color, BoardState boardState, bool createGameObject = false) : base(x, y, color, boardState)
     {
         if(createGameObject)
         {
@@ -317,39 +329,42 @@ public class BoardState
 
     public BoardState()
     {
+        Figure.FigureColor white = Figure.FigureColor.white;
+        Figure.FigureColor black = Figure.FigureColor.black;
+
         // Белые пешки
         for(int x = 0; x < 8; x++)
         {
-            new Pawn(x, 1, "white", this, true);
+            new Pawn(x, 1, white, this, true);
         }
         // Черные пешки
         for(int x = 0; x < 8; x++)
         {
-            new Pawn(x, 6, "black", this, true);
+            new Pawn(x, 6, black, this, true);
         }
         // Ладьи
-        new Rook(0, 0, "white", this, true);
-        new Rook(7, 0, "white", this, true);
-        new Rook(0, 7, "black", this, true);
-        new Rook(7, 7, "black", this, true);
+        new Rook(0, 0, white, this, true);
+        new Rook(7, 0, white, this, true);
+        new Rook(0, 7, black, this, true);
+        new Rook(7, 7, black, this, true);
         // Кони
-        new Knight(1, 0, "white", this, true);
-        new Knight(6, 0, "white", this, true);
-        new Knight(1, 7, "black", this, true);
-        new Knight(6, 7, "black", this, true);
+        new Knight(1, 0, white, this, true);
+        new Knight(6, 0, white, this, true);
+        new Knight(1, 7, black, this, true);
+        new Knight(6, 7, black, this, true);
         // Слоны
-        new Bishop(2, 0, "white", this, true);
-        new Bishop(5, 0, "white", this, true);
-        new Bishop(2, 7, "black", this, true);
-        new Bishop(5, 7, "black", this, true);
+        new Bishop(2, 0, white, this, true);
+        new Bishop(5, 0, white, this, true);
+        new Bishop(2, 7, black, this, true);
+        new Bishop(5, 7, black, this, true);
         // Короли
-        new King(3, 0, "white", this, true);
-        new King(3, 7, "black", this, true);
+        new King(3, 0, white, this, true);
+        new King(3, 7, black, this, true);
         // Ферзи
-        new Queen(4, 0, "white", this, true);
-        new Queen(4, 7, "black", this, true);
+        new Queen(4, 0, white, this, true);
+        new Queen(4, 7, black, this, true);
 
-        UpdateLegalMoves("white");
+        UpdateLegalMoves(white);
     }
 
     public BoardState(BoardState original)
@@ -391,9 +406,9 @@ public class BoardState
         board[x, y] = figure;
     }
 
-    public bool DetectCheck(string color)
+    public bool DetectCheck(Figure.FigureColor color)
     {
-        string enemyColor = color.Equals("black") ? "white" : "black";
+        Figure.FigureColor enemyColor = Figure.InvertColor(color);
         // Получаем фигуры
         List<Figure> figures = (from Figure figure in board where figure != null select figure).ToList();
         List<Figure> ownFigures = (from Figure figure in figures where figure.color == color select figure).ToList();
@@ -419,7 +434,7 @@ public class BoardState
         return legalMoves.Count == 0;
     }
 
-    public void UpdateLegalMoves(string color)
+    public void UpdateLegalMoves(Figure.FigureColor color)
     {
         legalMoves.Clear();
         // Получаем фигуры

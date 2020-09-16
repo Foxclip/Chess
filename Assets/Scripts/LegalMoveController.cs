@@ -24,7 +24,7 @@ public class LegalMoveController : MonoBehaviour
     private void OnMouseDown()
     {
         PieceController pieceController = piece.GetComponent<PieceController>();
-        string enemyColor = pieceController.boardStateFigure.GetEnemyColor();
+        Figure.FigureColor enemyColor = pieceController.boardStateFigure.GetEnemyColor();
 
         // Перемещение фигуры
         pieceController.boardStateFigure.Move((int)transform.position.x, (int)transform.position.y);
