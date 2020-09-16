@@ -389,6 +389,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   pieces: {fileID: 696328636}
   legalMoveCell: {fileID: 6606177938982281721, guid: 5fa55b9d417ef4942a830e8946414a3b, type: 3}
+  illegalMoveCell: {fileID: 8690374298594442890, guid: 15d67a67666e0994185dcd9401099b41, type: 3}
 --- !u!4 &1796206760
 Transform:
   m_ObjectHideFlags: 0
