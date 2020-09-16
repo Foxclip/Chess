@@ -15,12 +15,6 @@ public class LegalMoveController : MonoBehaviour
         gameController = GameObject.Find("GameController").GetComponent<GameController>();
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-
     private void OnMouseDown()
     {
         PieceController pieceController = piece.GetComponent<PieceController>();
