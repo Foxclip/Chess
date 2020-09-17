@@ -64,7 +64,7 @@ public class PieceController : MonoBehaviour
         // Ставим выделение на данную фигуру
         selectedPiece = gameObject;
 
-        List<Vector2Int> allMoveCells = boardStateFigure.GetAllMoveCells();
+        List<Vector2Int> allMoveCells = boardStateFigure.GetAllMoveCells(special: true);
         List<Vector2Int> legalMoveCells = boardStateFigure.GetLegalMoveCells();
         List<Vector2Int> illegalMoveCells = allMoveCells.Except(legalMoveCells).ToList();
         // Ставим метки на клетки в которые можно ходить
