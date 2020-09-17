@@ -35,6 +35,7 @@ public class PieceController : MonoBehaviour
 
     public void MovedCallback(int newX, int newY)
     {
+        Debug.Log($"Moved callback: {boardStateFigure.GetType()} from {new Vector2Int((int)transform.position.x, (int)transform.position.y)} to {new Vector2Int(newX, newY)}");
         transform.position = new Vector3(newX, newY);
     }
 

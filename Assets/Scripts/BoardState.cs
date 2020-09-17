@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using UnityEngine;
 
 public struct FigureMove
 {
@@ -38,7 +40,7 @@ public struct Vector2Int
 
     public override string ToString()
     {
-        return base.ToString();
+        return $"({x}, {y})";
     }
 
     public static bool operator ==(Vector2Int one, Vector2Int another)
@@ -65,7 +67,13 @@ public abstract class Figure
 
     public int x;
     public int y;
-    public Vector2Int Pos { get => new Vector2Int(x, y); }
+    public Vector2Int Pos {
+        get => new Vector2Int(x, y);
+        set {
+            x = value.x;
+            y = value.y;
+        }
+    }
     public VoidDelegate deletedCallback;
     public IntIntVoidDelegate movedCallback;
     public FigureColor color;
@@ -111,6 +119,56 @@ public abstract class Figure
 
     public void Move(int newX, int newY)
     {
+        // Рокировка
+        bool longDistance = Math.Abs(newX - x) > 1;
+        if(GetType() == typeof(King) && longDistance)
+        {
+            UnityEngine.Debug.Log("CASTLING");
+            UnityEngine.Debug.Log($"type: {GetType()} color: {color} newX: {newX} x: {x}");
+            King.CastlingSide side = newX < x ? King.CastlingSide.queenside : King.CastlingSide.kingside;
+            Vector2Int rookPos;
+            Vector2Int rookNewPos;
+            if(color == FigureColor.white && side == King.CastlingSide.queenside)
+            {
+                rookPos = new Vector2Int(0, 0);
+                rookNewPos = new Vector2Int(3, 0);
+            }
+            else if(color == FigureColor.white && side == King.CastlingSide.kingside)
+            {
+                rookPos = new Vector2Int(7, 0);
+                rookNewPos = new Vector2Int(5, 0);
+            }
+            else if(color == FigureColor.black && side == King.CastlingSide.queenside)
+            {
+                rookPos = new Vector2Int(0, 7);
+                rookNewPos = new Vector2Int(3, 7);
+            }
+            else if(color == FigureColor.black && side == King.CastlingSide.kingside)
+            {
+                rookPos = new Vector2Int(7, 7);
+                rookNewPos = new Vector2Int(5, 7);
+            }
+            else
+            {
+                throw new Exception($"Неверные значения color или side: color:{color} side:{side}");
+            }
+            Figure rook = boardState.GetFigureAtCell(rookPos);
+            if(rook == null)
+            {
+                throw new InvalidOperationException("Не найдена ладья для рокировки");
+            }
+            if(boardState.GetFigureAtCell(rookNewPos) != null)
+            {
+                throw new InvalidOperationException("Не удалось передвинуть ладью: в клетке уже есть фигура");
+            }
+            // Двигаем ладью
+            Vector2Int rookOldPos = rook.Pos;
+            rook.Pos = rookNewPos;
+            rook.movedCallback?.Invoke(rookNewPos.x, rookNewPos.y);
+            boardState.SetFigureAtCell(rookOldPos, null);
+            boardState.SetFigureAtCell(rookNewPos, rook);
+            UnityEngine.Debug.Log($"Rook moved from {rookOldPos} to {rookNewPos}");
+        }
         if(!BoardState.CoordinatesInBounds(x, y))
         {
             throw new ArgumentOutOfRangeException("Нельзя передвинуть фигуру за пределы доски");
@@ -448,6 +506,11 @@ public class BoardState
             throw new ArgumentOutOfRangeException("Координаты за пределами доски");
         }
         board[x, y] = figure;
+    }
+
+    public void SetFigureAtCell(Vector2Int pos, Figure figure)
+    {
+        SetFigureAtCell(pos.x, pos.y, figure);
     }
 
     public List<Figure> GetFigures()
