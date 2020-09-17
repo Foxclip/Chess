@@ -131,6 +131,7 @@ public abstract class Figure
         // Изменяем состояние доски
         boardState.SetFigureAtCell(oldX, oldY, null);
         boardState.SetFigureAtCell(newX, newY, this);
+        boardState.turnColor = InvertColor(boardState.turnColor);
     }
 
     public void Move(Vector2Int cell)
@@ -308,6 +309,7 @@ public class BoardState
 {
 
     private readonly Figure[,] board = new Figure[8, 8];
+    public Figure.FigureColor turnColor;
     public readonly List<FigureMove> legalMoves = new List<FigureMove>();
 
     public BoardState()
@@ -347,12 +349,15 @@ public class BoardState
         new Queen(4, 0, white, this);
         new Queen(4, 7, black, this);
 
+        turnColor = Figure.FigureColor.white;
         UpdateLegalMoves(white);
     }
 
     public BoardState(BoardState original)
     {
         board = new Figure[8, 8];
+        legalMoves = original.legalMoves;
+        turnColor = original.turnColor;
         for(int x = 0; x < 8; x++)
         {
             for(int y = 0; y < 8; y++)

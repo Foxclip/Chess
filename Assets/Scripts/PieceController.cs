@@ -16,8 +16,6 @@ public class PieceController : MonoBehaviour
     private static readonly List<GameObject> moveCells = new List<GameObject>();
     private static GameObject selectedPiece = null;
 
-
-
     void Start()
     {
         gameController = GameObject.Find("GameController").GetComponent<GameController>();
@@ -56,6 +54,12 @@ public class PieceController : MonoBehaviour
 
         // Убираем выделение с другой фигуры
         ClearSelection();
+
+        // Нельзя ходить вражеской фигурой
+        if(gameController.boardState.turnColor != gameObject.GetComponent<PieceController>().boardStateFigure.color)
+        {
+            return;
+        }
 
         // Ставим выделение на данную фигуру
         selectedPiece = gameObject;
