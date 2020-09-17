@@ -281,6 +281,12 @@ public class King : Figure
         TestCell(x + 1, y + 0);
         TestCell(x + 1, y - 1);
         TestCell(x + 0, y - 1);
+
+        //bool kingNotMoved = moveCount == 0;
+        ////bool kingsideIsFree = boardState.GetFigureAtCell()
+        //tempLegalMoveCells.Add(new Vector2Int(x, y));
+        //tempLegalMoveCells.Add(new Vector2Int(x, y));
+
         return tempLegalMoveCells;
     }
 
@@ -343,11 +349,11 @@ public class BoardState
         new Bishop(2, 7, black, this);
         new Bishop(5, 7, black, this);
         // Короли
-        new King(3, 0, white, this);
-        new King(3, 7, black, this);
+        new King(4, 0, white, this);
+        new King(4, 7, black, this);
         // Ферзи
-        new Queen(4, 0, white, this);
-        new Queen(4, 7, black, this);
+        new Queen(3, 0, white, this);
+        new Queen(3, 7, black, this);
 
         turnColor = Figure.FigureColor.white;
         UpdateLegalMoves(white);

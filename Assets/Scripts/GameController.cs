@@ -37,6 +37,5 @@ public class GameController : MonoBehaviour
         {
             LoadGameObject(figure);
         }
-
     }
 }
