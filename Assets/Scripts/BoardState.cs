@@ -279,19 +279,24 @@ public class King : Figure
     public void TestCastling(CastlingSide side)
     {
         // Определяем клетки между королем и ладьей
-        List<Vector2Int> cellsBetween = new List<Vector2Int>();
+        List<Vector2Int> cellsBetweenFree = new List<Vector2Int>();
+        List<Vector2Int> cellsBetweenCheck = new List<Vector2Int>();
         Vector2Int rookPos;
         if(side == CastlingSide.queenside)
         {
-            cellsBetween.Add(new Vector2Int(1, y));
-            cellsBetween.Add(new Vector2Int(2, y));
-            cellsBetween.Add(new Vector2Int(3, y));
+            cellsBetweenFree.Add(new Vector2Int(1, y));
+            cellsBetweenFree.Add(new Vector2Int(2, y));
+            cellsBetweenFree.Add(new Vector2Int(3, y));
+            cellsBetweenCheck.Add(new Vector2Int(2, y));
+            cellsBetweenCheck.Add(new Vector2Int(3, y));
             rookPos = new Vector2Int(0, y);
         }
         else
         {
-            cellsBetween.Add(new Vector2Int(5, y));
-            cellsBetween.Add(new Vector2Int(6, y));
+            cellsBetweenFree.Add(new Vector2Int(5, y));
+            cellsBetweenFree.Add(new Vector2Int(6, y));
+            cellsBetweenCheck.Add(new Vector2Int(5, y));
+            cellsBetweenCheck.Add(new Vector2Int(6, y));
             rookPos = new Vector2Int(7, y);
         }
         // Ищем ладью
@@ -304,9 +309,9 @@ public class King : Figure
         // Фигуры не двигались с начала партии
         bool figuresNotMoved = moveCount == 0 && rook.moveCount == 0;
         // Клетки меджу ними свободны
-        bool cellsBetweenAreFree = cellsBetween.TrueForAll((cell) => boardState.GetFigureAtCell(cell) == null);
+        bool cellsBetweenAreFree = cellsBetweenFree.TrueForAll((cell) => boardState.GetFigureAtCell(cell) == null);
         // Клетки между ними не под боем
-        bool kingsideIsUnderAttack = boardState.AnyCellIsUnderAttack(cellsBetween, InvertColor(color));
+        bool kingsideIsUnderAttack = boardState.AnyCellIsUnderAttack(cellsBetweenCheck, InvertColor(color));
         // Король не под шахом
         bool kingIsUnderAttack = boardState.DetectCheck(color);
         if(figuresNotMoved && cellsBetweenAreFree && !kingsideIsUnderAttack && !kingIsUnderAttack)
