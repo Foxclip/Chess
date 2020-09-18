@@ -117,14 +117,45 @@ public abstract class Figure
         return moveCells;
     }
 
+    private static void MoveFigure(Figure figure, int newX, int newY, bool takeFigure)
+    {
+        if(!BoardState.CoordinatesInBounds(newX, newY))
+        {
+            throw new ArgumentOutOfRangeException("Нельзя передвинуть фигуру за пределы доски");
+        }
+        // Если в клетке уже есть фигура
+        Figure figureAtCell = figure.boardState.GetFigureAtCell(newX, newY);
+        if(figureAtCell != null)
+        {
+            if(!takeFigure)
+            {
+                throw new InvalidOperationException("Нельзя передвинуть фигуру: в клетке уже есть фигура");
+            }
+            figureAtCell.Delete();
+        }
+        // Изменяем параметры фигуры
+        int oldX = figure.x;
+        int oldY = figure.y;
+        figure.x = newX;
+        figure.y = newY;
+        figure.movedCallback?.Invoke(newX, newY);
+        figure.moveCount++;
+        // Изменяем состояние доски
+        figure.boardState.SetFigureAtCell(oldX, oldY, null);
+        figure.boardState.SetFigureAtCell(newX, newY, figure);
+    }
+
+    private static void MoveFigure(Figure figure, Vector2Int newPos, bool takeFigure)
+    {
+        MoveFigure(figure, newPos.x, newPos.y, takeFigure);
+    }
+
     public void Move(int newX, int newY)
     {
         // Рокировка
         bool longDistance = Math.Abs(newX - x) > 1;
         if(GetType() == typeof(King) && longDistance)
         {
-            UnityEngine.Debug.Log("CASTLING");
-            UnityEngine.Debug.Log($"type: {GetType()} color: {color} newX: {newX} x: {x}");
             King.CastlingSide side = newX < x ? King.CastlingSide.queenside : King.CastlingSide.kingside;
             Vector2Int rookPos;
             Vector2Int rookNewPos;
@@ -162,33 +193,9 @@ public abstract class Figure
                 throw new InvalidOperationException("Не удалось передвинуть ладью: в клетке уже есть фигура");
             }
             // Двигаем ладью
-            Vector2Int rookOldPos = rook.Pos;
-            rook.Pos = rookNewPos;
-            rook.movedCallback?.Invoke(rookNewPos.x, rookNewPos.y);
-            boardState.SetFigureAtCell(rookOldPos, null);
-            boardState.SetFigureAtCell(rookNewPos, rook);
-            UnityEngine.Debug.Log($"Rook moved from {rookOldPos} to {rookNewPos}");
+            MoveFigure(rook, rookNewPos, takeFigure: false);
         }
-        if(!BoardState.CoordinatesInBounds(x, y))
-        {
-            throw new ArgumentOutOfRangeException("Нельзя передвинуть фигуру за пределы доски");
-        }
-        // Изменяем параметры фигуры
-        int oldX = x;
-        int oldY = y;
-        x = newX;
-        y = newY;
-        movedCallback?.Invoke(x, y);
-        moveCount++;
-        // Если в клетке уже есть фигура
-        Figure figureAtCell = boardState.GetFigureAtCell(x, y);
-        if(figureAtCell != null)
-        {
-            figureAtCell.Delete();
-        }
-        // Изменяем состояние доски
-        boardState.SetFigureAtCell(oldX, oldY, null);
-        boardState.SetFigureAtCell(newX, newY, this);
+        MoveFigure(this, newX, newY, takeFigure: true);
         boardState.turnColor = InvertColor(boardState.turnColor);
     }
 
