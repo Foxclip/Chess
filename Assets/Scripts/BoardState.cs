@@ -1,4 +1,5 @@
-﻿using System;
+﻿using JetBrains.Annotations;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -51,6 +52,11 @@ public struct Vector2Int
     public static bool operator!= (Vector2Int one, Vector2Int another)
     {
         return !(one == another);
+    }
+
+    public static Vector2Int operator+ (Vector2Int one, Vector2Int another)
+    {
+        return new Vector2Int(one.x + another.x, one.y + another.y);
     }
 }
 
@@ -152,9 +158,10 @@ public abstract class Figure
 
     public void Move(int newX, int newY)
     {
+        bool longDistanceX = Math.Abs(newX - x) > 1;
+        bool longDistanceY = Math.Abs(newY - y) > 1;
         // Рокировка
-        bool longDistance = Math.Abs(newX - x) > 1;
-        if(GetType() == typeof(King) && longDistance)
+        if(GetType() == typeof(King) && longDistanceX)
         {
             King.CastlingSide side = newX < x ? King.CastlingSide.queenside : King.CastlingSide.kingside;
             Vector2Int rookPos;
@@ -195,6 +202,21 @@ public abstract class Figure
             // Двигаем ладью
             MoveFigure(rook, rookNewPos, takeFigure: false);
         }
+        // Взятие на проходе
+        if(GetType() == typeof(Pawn) && longDistanceY)
+        {
+            int direction = color == FigureColor.white ? 1 : -1;
+            Figure left = boardState.GetFigureAtCell(Pos + new Vector2Int(-1, direction));
+            Figure right = boardState.GetFigureAtCell(Pos + new Vector2Int(1, direction));
+            if(left != null && left.GetType() == typeof(Pawn) && left.color == InvertColor(color))
+            {
+                left.Delete();
+            }
+            if(right != null && right.GetType() == typeof(Pawn) && right.color == InvertColor(color))
+            {
+                right.Delete();
+            }
+        }
         MoveFigure(this, newX, newY, takeFigure: true);
         boardState.turnColor = InvertColor(boardState.turnColor);
     }
@@ -207,7 +229,11 @@ public abstract class Figure
     public void Delete()
     {
         deletedCallback?.Invoke();
-        boardState.SetFigureAtCell(x, y, null);
+        if(boardState.GetFigureAtCell(Pos) == null)
+        {
+            throw new InvalidOperationException("Возможно фигура уже была удалена");
+        }
+        boardState.SetFigureAtCell(Pos, null);
     }
 
     public static FigureColor InvertColor(FigureColor color)
