@@ -10,11 +10,13 @@ public struct FigureMove
 {
     public Vector2Int from;
     public Vector2Int to;
+    public bool notMarkedAsIllegalRightAway;
 
-    public FigureMove(Vector2Int from, Vector2Int to)
+    public FigureMove(Vector2Int from, Vector2Int to, bool notMarkedAsIllegalRightAway)
     {
         this.from = from;
         this.to = to;
+        this.notMarkedAsIllegalRightAway = notMarkedAsIllegalRightAway;
     }
 }
 
@@ -86,10 +88,10 @@ public abstract class Figure
     public BoardState boardState;
     public int moveCount = 0;
 
-    protected List<Vector2Int> tempLegalMoveCells = new List<Vector2Int>();
+    protected List<FigureMove> tempMoveList = new List<FigureMove>();
 
 
-    public abstract List<Vector2Int> GetAllMoveCells(bool special);
+    public abstract List<FigureMove> GetAllMoves(bool special);
 
     public Figure(int x, int y, FigureColor color, BoardState boardState)
     {
@@ -115,12 +117,11 @@ public abstract class Figure
         return copy;
     }
 
-    public List<Vector2Int> GetLegalMoveCells()
+    public List<FigureMove> GetLegalMoves()
     {
-        List<Vector2Int> allMoveCells = GetAllMoveCells(special: true);
-        List<FigureMove> moves = boardState.legalMoves.FindAll((move) => move.from == Pos);
-        List<Vector2Int> moveCells = (from move in moves select move.to).ToList();
-        return moveCells;
+        List<FigureMove> allMoves = GetAllMoves(special: true);
+        List<FigureMove> moves = boardState.legalMoves.FindAll((move) => move.from == Pos && move.notMarkedAsIllegalRightAway);
+        return moves;
     }
 
     protected static void MoveFigure(Figure figure, int newX, int newY, bool takeFigure)
@@ -195,7 +196,7 @@ public abstract class Figure
         bool canTakePiece = takePieces && figureAtCell != null && figureAtCell.color.Equals(GetEnemyColor());
         if((canFreeMove || canTakePiece) && inBounds)
         {
-            tempLegalMoveCells.Add(new Vector2Int(x, y));
+            tempMoveList.Add(new FigureMove(Pos, new Vector2Int(x, y), notMarkedAsIllegalRightAway: true));
         }
     }
 
@@ -224,13 +225,11 @@ public abstract class Figure
 
 public class Pawn: Figure
 {
-    public Pawn(int x, int y, FigureColor color, BoardState boardState): base(x, y, color, boardState)
-    {
-    }
+    public Pawn(int x, int y, FigureColor color, BoardState boardState): base(x, y, color, boardState) {}
 
-    public override List<Vector2Int> GetAllMoveCells(bool special)
+    public override List<FigureMove> GetAllMoves(bool special)
     {
-        tempLegalMoveCells.Clear();
+        tempMoveList.Clear();
         int direction = color == FigureColor.white ? 1 : -1;
 
         TestCell(x, y + direction, takePieces: false);
@@ -241,7 +240,7 @@ public class Pawn: Figure
         TestCell(x - 1, y + direction, freeMove: false);
         TestCell(x + 1, y + direction, freeMove: false);
 
-        return tempLegalMoveCells;
+        return tempMoveList;
     }
 
     public override void Move(int newX, int newY)
@@ -271,14 +270,14 @@ public class Rook : Figure
 {
     public Rook(int x, int y, FigureColor color, BoardState boardState) : base(x, y, color, boardState) {}
 
-    public override List<Vector2Int> GetAllMoveCells(bool special)
+    public override List<FigureMove> GetAllMoves(bool special)
     {
-        tempLegalMoveCells.Clear();
+        tempMoveList.Clear();
         TestDirection(0, 1);
         TestDirection(1, 0);
         TestDirection(0, -1);
         TestDirection(-1, 0);
-        return tempLegalMoveCells;
+        return tempMoveList;
     }
 
 }
@@ -287,9 +286,9 @@ public class Knight : Figure
 {
     public Knight(int x, int y, FigureColor color, BoardState boardState) : base(x, y, color, boardState) {}
 
-    public override List<Vector2Int> GetAllMoveCells(bool special)
+    public override List<FigureMove> GetAllMoves(bool special)
     {
-        tempLegalMoveCells.Clear();
+        tempMoveList.Clear();
         TestCell(x - 1, y + 2);
         TestCell(x + 1, y + 2);
         TestCell(x + 2, y - 1);
@@ -298,7 +297,7 @@ public class Knight : Figure
         TestCell(x + 1, y - 2);
         TestCell(x - 2, y + 1);
         TestCell(x - 2, y - 1);
-        return tempLegalMoveCells;
+        return tempMoveList;
     }
 
 }
@@ -307,14 +306,14 @@ public class Bishop : Figure
 {
     public Bishop(int x, int y, FigureColor color, BoardState boardState) : base(x, y, color, boardState) {}
 
-    public override List<Vector2Int> GetAllMoveCells(bool special)
+    public override List<FigureMove> GetAllMoves(bool special)
     {
-        tempLegalMoveCells.Clear();
+        tempMoveList.Clear();
         TestDirection(1, 1);
         TestDirection(1, -1);
         TestDirection(-1, -1);
         TestDirection(-1, 1);
-        return tempLegalMoveCells;
+        return tempMoveList;
     }
 
 }
@@ -332,24 +331,24 @@ public class King : Figure
     public void TestCastling(CastlingSide side)
     {
         // Определяем клетки между королем и ладьей
-        List<Vector2Int> cellsBetweenFree = new List<Vector2Int>();
-        List<Vector2Int> cellsBetweenCheck = new List<Vector2Int>();
+        List<Vector2Int> cellsBetweenKingAndRook = new List<Vector2Int>();
+        List<Vector2Int> kingPassesCells = new List<Vector2Int>();
         Vector2Int rookPos;
         if(side == CastlingSide.queenside)
         {
-            cellsBetweenFree.Add(new Vector2Int(1, y));
-            cellsBetweenFree.Add(new Vector2Int(2, y));
-            cellsBetweenFree.Add(new Vector2Int(3, y));
-            cellsBetweenCheck.Add(new Vector2Int(2, y));
-            cellsBetweenCheck.Add(new Vector2Int(3, y));
+            cellsBetweenKingAndRook.Add(new Vector2Int(1, y));
+            cellsBetweenKingAndRook.Add(new Vector2Int(2, y));
+            cellsBetweenKingAndRook.Add(new Vector2Int(3, y));
+            kingPassesCells.Add(new Vector2Int(2, y));
+            kingPassesCells.Add(new Vector2Int(3, y));
             rookPos = new Vector2Int(0, y);
         }
         else
         {
-            cellsBetweenFree.Add(new Vector2Int(5, y));
-            cellsBetweenFree.Add(new Vector2Int(6, y));
-            cellsBetweenCheck.Add(new Vector2Int(5, y));
-            cellsBetweenCheck.Add(new Vector2Int(6, y));
+            cellsBetweenKingAndRook.Add(new Vector2Int(5, y));
+            cellsBetweenKingAndRook.Add(new Vector2Int(6, y));
+            kingPassesCells.Add(new Vector2Int(5, y));
+            kingPassesCells.Add(new Vector2Int(6, y));
             rookPos = new Vector2Int(7, y);
         }
         // Ищем ладью
@@ -362,21 +361,21 @@ public class King : Figure
         // Фигуры не двигались с начала партии
         bool figuresNotMoved = moveCount == 0 && rook.moveCount == 0;
         // Клетки меджу ними свободны
-        bool cellsBetweenAreFree = cellsBetweenFree.TrueForAll((cell) => boardState.GetFigureAtCell(cell) == null);
+        bool cellsBetweenAreFree = cellsBetweenKingAndRook.TrueForAll((cell) => boardState.GetFigureAtCell(cell) == null);
         // Клетки между ними не под боем
-        bool kingsideIsUnderAttack = boardState.AnyCellIsUnderAttack(cellsBetweenCheck, InvertColor(color));
+        bool kingCellsAreUnderAttack = boardState.AnyCellIsUnderAttack(kingPassesCells, InvertColor(color));
         // Король не под шахом
         bool kingIsUnderAttack = boardState.DetectCheck(color);
-        if(figuresNotMoved && cellsBetweenAreFree && !kingsideIsUnderAttack && !kingIsUnderAttack)
+        if(figuresNotMoved && cellsBetweenAreFree)
         {
             int newX = side == CastlingSide.queenside ? 2 : 6;
-            tempLegalMoveCells.Add(new Vector2Int(newX, y));
+            tempMoveList.Add(new FigureMove(Pos, new Vector2Int(newX, y), notMarkedAsIllegalRightAway: !kingCellsAreUnderAttack && !kingIsUnderAttack));
         }
     }
 
-    public override List<Vector2Int> GetAllMoveCells(bool special)
+    public override List<FigureMove> GetAllMoves(bool special)
     {
-        tempLegalMoveCells.Clear();
+        tempMoveList.Clear();
         TestCell(x - 1, y - 1);
         TestCell(x - 1, y + 0);
         TestCell(x - 1, y + 1);
@@ -390,7 +389,7 @@ public class King : Figure
             TestCastling(CastlingSide.queenside);
             TestCastling(CastlingSide.kingside);
         }
-        return tempLegalMoveCells;
+        return tempMoveList;
     }
 
     public override void Move(int newX, int newY)
@@ -447,9 +446,9 @@ public class Queen : Figure
 {
     public Queen(int x, int y, FigureColor color, BoardState boardState) : base(x, y, color, boardState) {}
 
-    public override List<Vector2Int> GetAllMoveCells(bool special)
+    public override List<FigureMove> GetAllMoves(bool special)
     {
-        tempLegalMoveCells.Clear();
+        tempMoveList.Clear();
         TestDirection(0, 1);
         TestDirection(1, 0);
         TestDirection(0, -1);
@@ -458,7 +457,7 @@ public class Queen : Figure
         TestDirection(1, -1);
         TestDirection(-1, -1);
         TestDirection(-1, 1);
-        return tempLegalMoveCells;
+        return tempMoveList;
     }
 }
 
@@ -532,6 +531,11 @@ public class BoardState
         return x >= 0 && x < 8 && y >= 0 && y < 8;
     }
 
+    public static List<Vector2Int> GetMoveDestinations(List<FigureMove> moves)
+    {
+        return (from move in moves select move.to).Distinct().ToList();
+    }
+
     public Figure GetFigureAtCell(int x, int y)
     {
         return CoordinatesInBounds(x, y) ? board[x, y] : null;
@@ -563,14 +567,16 @@ public class BoardState
 
     public bool CellIsUnderAttack(Vector2Int cell, Figure.FigureColor color)
     {
-        List<Vector2Int> moves = GetMoveCellsByColor(color, special: false);
-        return moves.Contains(cell);
+        List<FigureMove> moves = GetMovesByColor(color, special: false);
+        List<Vector2Int> destinations = GetMoveDestinations(moves);
+        return destinations.Contains(cell);
     }
 
     public bool AnyCellIsUnderAttack(List<Vector2Int> cells, Figure.FigureColor color)
     {
-        List<Vector2Int> moves = GetMoveCellsByColor(color, special: false);
-        return cells.Intersect(moves).Count() > 0;
+        List<FigureMove> moves = GetMovesByColor(color, special: false);
+        List<Vector2Int> destinations = GetMoveDestinations(moves);
+        return cells.Intersect(destinations).Count() > 0;
     }
 
     public bool DetectCheck(Figure.FigureColor color)
@@ -602,28 +608,10 @@ public class BoardState
         List<FigureMove> colorMoves = new List<FigureMove>();
         foreach(Figure figure in figures)
         {
-            List<Vector2Int> moves = figure.GetAllMoveCells(special);
-            foreach(Vector2Int move in moves)
-            {
-                colorMoves.Add(new FigureMove(figure.Pos, move));
-            }
+            List<FigureMove> moves = figure.GetAllMoves(special);
+            colorMoves = colorMoves.Concat(moves).ToList();
         }
         return colorMoves;
-    }
-
-    public List<Vector2Int> GetMoveCellsByColor(Figure.FigureColor color, bool special)
-    {
-        // Получаем фигуры
-        List<Figure> figures = GetFiguresByColor(color);
-        // Получаем список ходов
-        List<Vector2Int> moveCells = new List<Vector2Int>();
-        foreach(Figure figure in figures)
-        {
-            List<Vector2Int> moves = figure.GetAllMoveCells(special);
-            moveCells = moveCells.Concat(moves).ToList();
-        }
-        moveCells = moveCells.Distinct().ToList();
-        return moveCells;
     }
 
     public void UpdateLegalMoves(Figure.FigureColor color)
