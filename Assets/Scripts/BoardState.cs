@@ -123,7 +123,7 @@ public abstract class Figure
         return moveCells;
     }
 
-    private static void MoveFigure(Figure figure, int newX, int newY, bool takeFigure)
+    protected static void MoveFigure(Figure figure, int newX, int newY, bool takeFigure)
     {
         if(!BoardState.CoordinatesInBounds(newX, newY))
         {
@@ -151,72 +151,13 @@ public abstract class Figure
         figure.boardState.SetFigureAtCell(newX, newY, figure);
     }
 
-    private static void MoveFigure(Figure figure, Vector2Int newPos, bool takeFigure)
+    protected static void MoveFigure(Figure figure, Vector2Int newPos, bool takeFigure)
     {
         MoveFigure(figure, newPos.x, newPos.y, takeFigure);
     }
 
-    public void Move(int newX, int newY)
+    public virtual void Move(int newX, int newY)
     {
-        bool longDistanceX = Math.Abs(newX - x) > 1;
-        bool longDistanceY = Math.Abs(newY - y) > 1;
-        // Рокировка
-        if(GetType() == typeof(King) && longDistanceX)
-        {
-            King.CastlingSide side = newX < x ? King.CastlingSide.queenside : King.CastlingSide.kingside;
-            Vector2Int rookPos;
-            Vector2Int rookNewPos;
-            if(color == FigureColor.white && side == King.CastlingSide.queenside)
-            {
-                rookPos = new Vector2Int(0, 0);
-                rookNewPos = new Vector2Int(3, 0);
-            }
-            else if(color == FigureColor.white && side == King.CastlingSide.kingside)
-            {
-                rookPos = new Vector2Int(7, 0);
-                rookNewPos = new Vector2Int(5, 0);
-            }
-            else if(color == FigureColor.black && side == King.CastlingSide.queenside)
-            {
-                rookPos = new Vector2Int(0, 7);
-                rookNewPos = new Vector2Int(3, 7);
-            }
-            else if(color == FigureColor.black && side == King.CastlingSide.kingside)
-            {
-                rookPos = new Vector2Int(7, 7);
-                rookNewPos = new Vector2Int(5, 7);
-            }
-            else
-            {
-                throw new Exception($"Неверные значения color или side: color:{color} side:{side}");
-            }
-            Figure rook = boardState.GetFigureAtCell(rookPos);
-            if(rook == null)
-            {
-                throw new InvalidOperationException("Не найдена ладья для рокировки");
-            }
-            if(boardState.GetFigureAtCell(rookNewPos) != null)
-            {
-                throw new InvalidOperationException("Не удалось передвинуть ладью: в клетке уже есть фигура");
-            }
-            // Двигаем ладью
-            MoveFigure(rook, rookNewPos, takeFigure: false);
-        }
-        // Взятие на проходе
-        if(GetType() == typeof(Pawn) && longDistanceY)
-        {
-            int direction = color == FigureColor.white ? 1 : -1;
-            Figure left = boardState.GetFigureAtCell(Pos + new Vector2Int(-1, direction));
-            Figure right = boardState.GetFigureAtCell(Pos + new Vector2Int(1, direction));
-            if(left != null && left.GetType() == typeof(Pawn) && left.color == InvertColor(color))
-            {
-                left.Delete();
-            }
-            if(right != null && right.GetType() == typeof(Pawn) && right.color == InvertColor(color))
-            {
-                right.Delete();
-            }
-        }
         MoveFigure(this, newX, newY, takeFigure: true);
         boardState.turnColor = InvertColor(boardState.turnColor);
     }
@@ -301,6 +242,27 @@ public class Pawn: Figure
         TestCell(x + 1, y + direction, freeMove: false);
 
         return tempLegalMoveCells;
+    }
+
+    public override void Move(int newX, int newY)
+    {
+        // Взятие на проходе
+        bool longDistanceY = Math.Abs(newY - y) > 1;
+        if(longDistanceY)
+        {
+            int direction = color == FigureColor.white ? 1 : -1;
+            Figure left = boardState.GetFigureAtCell(Pos + new Vector2Int(-1, direction));
+            Figure right = boardState.GetFigureAtCell(Pos + new Vector2Int(1, direction));
+            if(left != null && left.GetType() == typeof(Pawn) && left.color == InvertColor(color))
+            {
+                left.Delete();
+            }
+            if(right != null && right.GetType() == typeof(Pawn) && right.color == InvertColor(color))
+            {
+                right.Delete();
+            }
+        }
+        base.Move(newX, newY);
     }
 
 }
@@ -429,6 +391,54 @@ public class King : Figure
             TestCastling(CastlingSide.kingside);
         }
         return tempLegalMoveCells;
+    }
+
+    public override void Move(int newX, int newY)
+    {
+        // Рокировка
+        bool longDistanceX = Math.Abs(newX - x) > 1;
+        if(longDistanceX)
+        {
+            CastlingSide side = newX < x ? CastlingSide.queenside : CastlingSide.kingside;
+            Vector2Int rookPos;
+            Vector2Int rookNewPos;
+            if(color == FigureColor.white && side == CastlingSide.queenside)
+            {
+                rookPos = new Vector2Int(0, 0);
+                rookNewPos = new Vector2Int(3, 0);
+            }
+            else if(color == FigureColor.white && side == CastlingSide.kingside)
+            {
+                rookPos = new Vector2Int(7, 0);
+                rookNewPos = new Vector2Int(5, 0);
+            }
+            else if(color == FigureColor.black && side == CastlingSide.queenside)
+            {
+                rookPos = new Vector2Int(0, 7);
+                rookNewPos = new Vector2Int(3, 7);
+            }
+            else if(color == FigureColor.black && side == CastlingSide.kingside)
+            {
+                rookPos = new Vector2Int(7, 7);
+                rookNewPos = new Vector2Int(5, 7);
+            }
+            else
+            {
+                throw new Exception($"Неверные значения color или side: color:{color} side:{side}");
+            }
+            Figure rook = boardState.GetFigureAtCell(rookPos);
+            if(rook == null)
+            {
+                throw new InvalidOperationException("Не найдена ладья для рокировки");
+            }
+            if(boardState.GetFigureAtCell(rookNewPos) != null)
+            {
+                throw new InvalidOperationException("Не удалось передвинуть ладью: в клетке уже есть фигура");
+            }
+            // Двигаем ладью
+            MoveFigure(rook, rookNewPos, takeFigure: false);
+        }
+        base.Move(newX, newY);
     }
 
 }
