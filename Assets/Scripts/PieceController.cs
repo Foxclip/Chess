@@ -44,10 +44,10 @@ public class PieceController : MonoBehaviour
     /// <summary>
     /// Вызывется фигурой, находящейся на доске BoardState если фигура была передвинута.
     /// </summary>
-    public void MovedCallback(int newX, int newY)
+    public void MovedCallback(Vector2Int newPos)
     {
-        Debug.Log($"Moved callback: {boardStateFigure.GetType()} from {new Vector2Int((int)transform.position.x, (int)transform.position.y)} to {new Vector2Int(newX, newY)}");
-        transform.position = new Vector3(newX, newY);
+        Debug.Log($"Moved callback: {boardStateFigure.GetType()} from {new Vector2Int((int)transform.position.x, (int)transform.position.y)} to {newPos}");
+        transform.position = new Vector3(newPos.x, newPos.y);
     }
 
     /// <summary>
@@ -80,20 +80,22 @@ public class PieceController : MonoBehaviour
         selectedPiece = gameObject;
 
         // Определяем клеки в которые можно ходить и в которые нельзя
-        List<Vector2Int> allMoveDestinations = BoardState.GetMoveDestinations(boardStateFigure.GetAllMoves(special: true));
-        List<Vector2Int> legalMoveDestinations = BoardState.GetMoveDestinations(boardStateFigure.GetLegalMoves());
-        List<Vector2Int> illegalMoveDestinations = allMoveDestinations.Except(legalMoveDestinations).ToList();
+        List<FigureMove> allMoves = boardStateFigure.GetAllMoves(special: true);
+        List<FigureMove> legalMoves = boardStateFigure.GetLegalMoves();
+        List<FigureMove> illegalMoves = allMoves.Except(legalMoves).ToList();
         // Ставим метки на клетки в которые можно ходить
-        foreach(Vector2Int cellCoords in legalMoveDestinations)
+        foreach(FigureMove move in legalMoves)
         {
-            GameObject newObject = Instantiate(gameController.legalMoveCell, new Vector3(cellCoords.x, cellCoords.y), Quaternion.identity);
-            newObject.GetComponent<LegalMoveController>().piece = transform;
+            GameObject newObject = Instantiate(gameController.legalMoveCell, new Vector3(move.to.x, move.to.y), Quaternion.identity);
+            LegalMoveController legalMoveController = newObject.GetComponent<LegalMoveController>();
+            legalMoveController.piece = transform;
+            legalMoveController.move = move;
             moveCells.Add(newObject);
         }
         // И в которые нельзя из-за шаха
-        foreach(Vector2Int cellCoords in illegalMoveDestinations)
+        foreach(FigureMove move in illegalMoves)
         {
-            GameObject newObject = Instantiate(gameController.illegalMoveCell, new Vector3(cellCoords.x, cellCoords.y), Quaternion.identity);
+            GameObject newObject = Instantiate(gameController.illegalMoveCell, new Vector3(move.to.x, move.to.y), Quaternion.identity);
             moveCells.Add(newObject);
         }
 

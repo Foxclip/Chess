@@ -9,14 +9,14 @@ using UnityEngine;
 /// <summary>
 /// Ход фигуры
 /// </summary>
-public struct FigureMove
+public class FigureMove
 {
     /// <summary>
-    /// Из какой клетки
+    /// Начальная позиция фигуры
     /// </summary>
     public Vector2Int from;
     /// <summary>
-    /// В какую клетку
+    /// Конечная позиция фигуры
     /// </summary>
     public Vector2Int to;
     /// <summary>
@@ -29,6 +29,28 @@ public struct FigureMove
         this.from = from;
         this.to = to;
         this.notMarkedAsIllegalRightAway = notMarkedAsIllegalRightAway;
+    }
+}
+
+/// <summary>
+/// Рокировка
+/// </summary>
+public class CastlingMove : FigureMove
+{
+    /// <summary>
+    /// Начальная позиция ладьи
+    /// </summary>
+    public Vector2Int rookFrom;
+    /// <summary>
+    /// Конечная позиция ладьи
+    /// </summary>
+    public Vector2Int rookTo;
+
+    public CastlingMove(Vector2Int from, Vector2Int to, Vector2Int rookFrom, Vector2Int rookTo, bool notMarkedAsIllegalRightAway) 
+        :base(from, to, notMarkedAsIllegalRightAway)
+    {
+        this.rookFrom = rookFrom;
+        this.rookTo = rookTo;
     }
 }
 
@@ -93,11 +115,11 @@ public abstract class Figure
     /// <summary>
     /// Тип для deletedCallback
     /// </summary>
-    public delegate void VoidDelegate();
+    public delegate void DeletedCallbackDelegate();
     /// <summary>
     /// Тип для movedCallback
     /// </summary>
-    public delegate void IntIntVoidDelegate(int newX, int newY);
+    public delegate void MovedCallbackDelegate(Vector2Int newPos);
 
     /// <summary>
     /// Позиция x фигуры на доске
@@ -120,11 +142,11 @@ public abstract class Figure
     /// <summary>
     /// Вызывется при удалении фигуры с доски (например, ее взяли)
     /// </summary>
-    public VoidDelegate deletedCallback;
+    public DeletedCallbackDelegate deletedCallback;
     /// <summary>
     /// Вызывается когда фигура была передвинута
     /// </summary>
-    public IntIntVoidDelegate movedCallback;
+    public MovedCallbackDelegate movedCallback;
     /// <summary>
     /// Цвет фигуры (белый или черный)
     /// </summary>
@@ -195,14 +217,14 @@ public abstract class Figure
     /// Двигает фигуру в другую клетку.
     /// </summary>
     /// <param name="takeFigure">Можно ли брать вражеские фигуры.</param>
-    protected static void MoveFigure(Figure figure, int newX, int newY, bool takeFigure)
+    protected static void MoveFigure(Figure figure, Vector2Int newPos, bool takeFigure)
     {
-        if(!BoardState.CoordinatesInBounds(newX, newY))
+        if(!BoardState.CoordinatesInBounds(newPos))
         {
             throw new ArgumentOutOfRangeException("Нельзя передвинуть фигуру за пределы доски");
         }
         // Если в клетке уже есть фигура
-        Figure figureAtCell = figure.boardState.GetFigureAtCell(newX, newY);
+        Figure figureAtCell = figure.boardState.GetFigureAtCell(newPos);
         if(figureAtCell != null)
         {
             if(!takeFigure)
@@ -216,41 +238,26 @@ public abstract class Figure
             figureAtCell.Delete();
         }
         // Изменяем параметры фигуры
-        int oldX = figure.x;
-        int oldY = figure.y;
-        figure.x = newX;
-        figure.y = newY;
-        figure.movedCallback?.Invoke(newX, newY);
+        Vector2Int oldPos = figure.Pos;
+        figure.Pos = newPos;
+        figure.movedCallback?.Invoke(newPos);
         figure.moveCount++;
         // Изменяем состояние доски
-        figure.boardState.SetFigureAtCell(oldX, oldY, null);
-        figure.boardState.SetFigureAtCell(newX, newY, figure);
-    }
-
-    /// <summary>
-    /// Двигает фигуру в другую клетку.
-    /// </summary>
-    /// <param name="takeFigure">Можно ли брать вражеские фигуры.</param>
-    protected static void MoveFigure(Figure figure, Vector2Int newPos, bool takeFigure)
-    {
-        MoveFigure(figure, newPos.x, newPos.y, takeFigure);
+        figure.boardState.SetFigureAtCell(oldPos, null);
+        figure.boardState.SetFigureAtCell(newPos, figure);
     }
 
     /// <summary>
     /// Совершить ход фигурой. Специальные ходы (рокировка, взятие на проходе) описыватся в override методах дочерних классов.
     /// </summary>
-    public virtual void Move(int newX, int newY)
+    public virtual void ExecuteMove(FigureMove move)
     {
-        MoveFigure(this, newX, newY, takeFigure: true);
+        if(move.from != Pos)
+        {
+            throw new ArgumentException("Начальная клетка FigureMove не совпадает с позицией фигуры");
+        }
+        MoveFigure(this, move.to, takeFigure: true);
         boardState.turnColor = InvertColor(boardState.turnColor);
-    }
-
-    /// <summary>
-    /// Совершить ход фигурой. Специальные ходы (рокировка, взятие на проходе) описыватся в override методах дочерних классов.
-    /// </summary>
-    public void Move(Vector2Int cell)
-    {
-        Move(cell.x, cell.y);
     }
 
     /// <summary>
@@ -364,10 +371,10 @@ public class Pawn: Figure
     /// <summary>
     /// Двигает пешку в другую клетку.
     /// </summary>
-    public override void Move(int newX, int newY)
+    public override void ExecuteMove(FigureMove move)
     {
         // Взятие на проходе
-        bool longDistanceY = Math.Abs(newY - y) > 1;
+        bool longDistanceY = Math.Abs(move.to.y - y) > 1;
         if(longDistanceY)
         {
             int direction = color == FigureColor.white ? 1 : -1;
@@ -382,8 +389,8 @@ public class Pawn: Figure
                 right.Delete();
             }
         }
-        // Вызов базового метода Move
-        base.Move(newX, newY);
+        // Вызов базового метода ExecuteMove
+        base.ExecuteMove(move);
     }
 }
 
@@ -510,6 +517,7 @@ public class King : Figure
         // Определяем клетки, которые проходит король при рокировке (они должны быть не по боем вражеских фигур).
         List<Vector2Int> kingPassesCells = new List<Vector2Int>();
         Vector2Int rookPos;
+        Vector2Int rookNewPos;
         if(side == CastlingSide.queenside)
         {
             cellsBetweenKingAndRook.Add(new Vector2Int(1, y));
@@ -519,6 +527,7 @@ public class King : Figure
             kingPassesCells.Add(new Vector2Int(3, y));
             // Ладья будет со стороны королевы
             rookPos = new Vector2Int(0, y);
+            rookNewPos = new Vector2Int(3, y);
         }
         else
         {
@@ -528,14 +537,16 @@ public class King : Figure
             kingPassesCells.Add(new Vector2Int(6, y));
             // Ладья будет со стороны короля
             rookPos = new Vector2Int(7, y);
+            rookNewPos = new Vector2Int(5, y);
         }
         // Ищем ладью
-        Figure rook = boardState.GetFigureAtCell(rookPos);
-        bool rookInPlace = rook != null && rook.GetType() == typeof(Rook) && rook.color == color;
+        Figure figureInTheCorner = boardState.GetFigureAtCell(rookPos);
+        bool rookInPlace = figureInTheCorner != null && figureInTheCorner.GetType() == typeof(Rook) && figureInTheCorner.color == color;
         if(!rookInPlace)
         {
             return;
         }
+        Rook rook = (Rook)figureInTheCorner;
         // Фигуры не двигались с начала партии
         bool figuresNotMoved = moveCount == 0 && rook.moveCount == 0;
         // Клетки меджу ними свободны
@@ -547,7 +558,15 @@ public class King : Figure
         if(figuresNotMoved && cellsBetweenAreFree)
         {
             int newX = side == CastlingSide.queenside ? 2 : 6;
-            tempMoveList.Add(new FigureMove(Pos, new Vector2Int(newX, y), notMarkedAsIllegalRightAway: !kingCellsAreUnderAttack && !kingIsUnderAttack));
+            tempMoveList.Add(
+                new CastlingMove(
+                    from: Pos,
+                    to: new Vector2Int(newX, y),
+                    rookFrom: rookPos,
+                    rookTo: rookNewPos,
+                    notMarkedAsIllegalRightAway: !kingCellsAreUnderAttack && !kingIsUnderAttack
+                )
+            );
         }
     }
 
@@ -578,56 +597,22 @@ public class King : Figure
     /// <summary>
     /// Двигает короля в другую клетку.
     /// </summary>
-    public override void Move(int newX, int newY)
+    public override void ExecuteMove(FigureMove move)
     {
-        // Рокировка
-        bool longDistanceX = Math.Abs(newX - x) > 1;
-        if(longDistanceX)
+        if(move.GetType() == typeof(CastlingMove))
         {
-            // Определяем сторону рокировки
-            CastlingSide side = newX < x ? CastlingSide.queenside : CastlingSide.kingside;
-            // Определяем клетки где должна быть ладья и куда он должна переместиться
-            Vector2Int rookPos;
-            Vector2Int rookNewPos;
-            if(color == FigureColor.white && side == CastlingSide.queenside)
-            {
-                rookPos = new Vector2Int(0, 0);
-                rookNewPos = new Vector2Int(3, 0);
-            }
-            else if(color == FigureColor.white && side == CastlingSide.kingside)
-            {
-                rookPos = new Vector2Int(7, 0);
-                rookNewPos = new Vector2Int(5, 0);
-            }
-            else if(color == FigureColor.black && side == CastlingSide.queenside)
-            {
-                rookPos = new Vector2Int(0, 7);
-                rookNewPos = new Vector2Int(3, 7);
-            }
-            else if(color == FigureColor.black && side == CastlingSide.kingside)
-            {
-                rookPos = new Vector2Int(7, 7);
-                rookNewPos = new Vector2Int(5, 7);
-            }
-            else
-            {
-                throw new Exception($"Неверные значения color или side: color:{color} side:{side}");
-            }
+            CastlingMove castlingMove = (CastlingMove)move;
             // Ищем ладью
-            Figure rook = boardState.GetFigureAtCell(rookPos);
-            if(rook == null)
+            Figure rook = boardState.GetFigureAtCell(castlingMove.rookFrom);
+            if(rook == null || rook.GetType() != typeof(Rook))
             {
                 throw new InvalidOperationException("Не найдена ладья для рокировки");
             }
-            if(boardState.GetFigureAtCell(rookNewPos) != null)
-            {
-                throw new InvalidOperationException("Не удалось передвинуть ладью: в клетке уже есть фигура");
-            }
             // Двигаем ладью
-            MoveFigure(rook, rookNewPos, takeFigure: false);
+            MoveFigure(rook, castlingMove.rookTo, takeFigure: false);
         }
         // Вызов базового метода Move
-        base.Move(newX, newY);
+        base.ExecuteMove(move);
     }
 
 }
@@ -755,6 +740,15 @@ public class BoardState
     public static bool CoordinatesInBounds(int x, int y)
     {
         return x >= 0 && x < 8 && y >= 0 && y < 8;
+    }
+
+    /// <summary>
+    /// Определяет, находятся ли координаты в пределах доски.
+    /// </summary>
+    /// <returns>Находятся ли координаты в пределах доски.</returns>
+    public static bool CoordinatesInBounds(Vector2Int coords)
+    {
+        return CoordinatesInBounds(coords.x, coords.y);
     }
 
     /// <summary>
@@ -900,7 +894,7 @@ public class BoardState
         {
             BoardState virtualBoard = new BoardState(this);
             Figure figure = virtualBoard.GetFigureAtCell(ownMove.from);
-            figure.Move(ownMove.to);
+            figure.ExecuteMove(ownMove);
             if(!virtualBoard.DetectCheck(turnColor))
             {
                 legalMoves.Add(ownMove);

@@ -13,6 +13,12 @@ public class LegalMoveController : MonoBehaviour
     /// К какой фигуре относится метка.
     /// </summary>
     public Transform piece;
+    /// <summary>
+    /// Привязанный ход на BoardState
+    /// </summary>
+    [HideInInspector]
+    public FigureMove move;
+
     private GameController gameController;
 
     void Start()
@@ -26,7 +32,7 @@ public class LegalMoveController : MonoBehaviour
         Figure.FigureColor enemyColor = pieceController.boardStateFigure.GetEnemyColor();
 
         // Перемещение фигуры
-        pieceController.boardStateFigure.Move((int)transform.position.x, (int)transform.position.y);
+        pieceController.boardStateFigure.ExecuteMove(move);
         gameController.boardState.UpdateLegalMoves();
         Debug.Log($"{enemyColor} has {gameController.boardState.legalMoves.Count()} moves");
         PieceController.ClearSelection();
