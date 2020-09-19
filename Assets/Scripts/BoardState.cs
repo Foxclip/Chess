@@ -214,6 +214,17 @@ public abstract class Figure
     }
 
     /// <summary>
+    /// Получает список клеток находящихся под боем данной фигуры
+    /// </summary>
+    /// <returns></returns>
+    public virtual List<Vector2Int> GetCellsUnderAttack()
+    {
+        List<FigureMove> moves = GetAllMoves(special: false);
+        List<Vector2Int> destinations = BoardState.GetMoveDestinations(moves);
+        return destinations;
+    }
+
+    /// <summary>
     /// Двигает фигуру в другую клетку.
     /// </summary>
     /// <param name="takeFigure">Можно ли брать вражеские фигуры.</param>
@@ -366,6 +377,14 @@ public class Pawn: Figure
         TestCell(x + 1, y + direction, freeMove: false);
 
         return tempMoveList;
+    }
+
+    public override List<Vector2Int> GetCellsUnderAttack()
+    {
+        int direction = color == FigureColor.white ? 1 : -1;
+        Vector2Int left = Pos + new Vector2Int(-1, direction);
+        Vector2Int right = Pos + new Vector2Int(1, direction);
+        return new List<Vector2Int>() { left, right };
     }
 
     /// <summary>
@@ -816,9 +835,7 @@ public class BoardState
     /// <param name="color">Клетка находится под боем фигур этого цвета.</param>
     public bool CellIsUnderAttack(Vector2Int cell, Figure.FigureColor color)
     {
-        List<FigureMove> moves = GetMovesByColor(color, special: false);
-        List<Vector2Int> destinations = GetMoveDestinations(moves);
-        return destinations.Contains(cell);
+        return GetAllCellsUnderAttackByColor(color).Contains(cell);
     }
 
     /// <summary>
@@ -827,9 +844,7 @@ public class BoardState
     /// <param name="color">Клетки находятся под боем фигур этого цвета.</param>
     public bool AnyCellIsUnderAttack(List<Vector2Int> cells, Figure.FigureColor color)
     {
-        List<FigureMove> moves = GetMovesByColor(color, special: false);
-        List<Vector2Int> destinations = GetMoveDestinations(moves);
-        return cells.Intersect(destinations).Count() > 0;
+        return cells.Intersect(GetAllCellsUnderAttackByColor(color)).Count() > 0;
     }
 
     /// <summary>
@@ -871,13 +886,20 @@ public class BoardState
         // Получаем фигуры
         List<Figure> figures = GetFiguresByColor(color);
         // Получаем список ходов
-        List<FigureMove> colorMoves = new List<FigureMove>();
-        foreach(Figure figure in figures)
-        {
-            List<FigureMove> moves = figure.GetAllMoves(special);
-            colorMoves = colorMoves.Concat(moves).ToList();
-        }
+        List<FigureMove> colorMoves = figures.SelectMany(figure => figure.GetAllMoves(special)).ToList();
         return colorMoves;
+    }
+
+    /// <summary>
+    /// Получает все клетки, находящиеся под боем фигур определенного цвета
+    /// </summary>
+    public List<Vector2Int> GetAllCellsUnderAttackByColor(Figure.FigureColor color)
+    {
+        // Получаем фигуры
+        List<Figure> colorFigures = GetFiguresByColor(color);
+        // Получаем список клеток под боем
+        List<Vector2Int> allCellsUnderAttack = colorFigures.SelectMany(figure => figure.GetCellsUnderAttack()).ToList();
+        return allCellsUnderAttack;
     }
 
     /// <summary>
