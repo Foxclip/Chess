@@ -5,24 +5,38 @@ using UnityEngine;
 
 public class GameController : MonoBehaviour
 {
-
-    public Transform pieces;
+    /// <summary>
+    /// Метка разрешенного хода.
+    /// </summary>
     public GameObject legalMoveCell;
+    /// <summary>
+    /// Метка запрещенного хода.
+    /// </summary>
     public GameObject illegalMoveCell;
 
+    /// <summary>
+    /// Доска BoardState, на которой находятся фигуры.
+    /// </summary>
     [HideInInspector]
     public BoardState boardState;
 
+    /// <summary>
+    /// Загружает префаб фигуры и привязывает его к фигуре BoardState.
+    /// </summary>
+    /// <param name="figure">Фигура BoardState.</param>
     public void LoadGameObject(Figure figure)
     {
+        // Определяем имя префаба
         string figureColor = figure.color.ToString();
         string figureType = figure.GetType().ToString().ToLower();
         string figureName = $"{figureColor}_{figureType}";
 
+        // Создаем объект
         GameObject gameObject = Instantiate(Resources.Load(figureName)) as GameObject;
         gameObject.transform.position = new Vector3(figure.x, figure.y);
         gameObject.transform.parent = GameObject.Find("pieces").transform;
 
+        // Привязываем объект к фигуре BoardState
         PieceController pieceController = gameObject.GetComponent<PieceController>();
         pieceController.boardStateFigure = figure;
         figure.movedCallback = pieceController.MovedCallback;
@@ -31,7 +45,9 @@ public class GameController : MonoBehaviour
 
     void Start()
     {
+        // Создаем доску BoardState и расставляем фигуры
         boardState = new BoardState();
+        // Создаем объекты привязываем их к BoardState фигурам.
         List<Figure> figures = boardState.GetFigures();
         foreach(Figure figure in figures)
         {

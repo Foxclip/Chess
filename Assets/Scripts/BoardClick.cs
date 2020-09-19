@@ -2,22 +2,14 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Нажатие на доску.
+/// </summary>
 public class BoardClick : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-    }
-
     private void OnMouseDown()
     {
+        // Убирвем выделение
         PieceController.ClearSelection();
     }
-
 }

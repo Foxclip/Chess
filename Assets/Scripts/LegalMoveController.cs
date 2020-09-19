@@ -3,9 +3,15 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 
+/// <summary>
+/// Метка арзрешенного хода.
+/// </summary>
 public class LegalMoveController : MonoBehaviour
 {
 
+    /// <summary>
+    /// К какой фигуре относится метка.
+    /// </summary>
     public Transform piece;
     private GameController gameController;
 
@@ -21,11 +27,11 @@ public class LegalMoveController : MonoBehaviour
 
         // Перемещение фигуры
         pieceController.boardStateFigure.Move((int)transform.position.x, (int)transform.position.y);
-        gameController.boardState.UpdateLegalMoves(enemyColor);
+        gameController.boardState.UpdateLegalMoves();
         Debug.Log($"{enemyColor} has {gameController.boardState.legalMoves.Count()} moves");
         PieceController.ClearSelection();
 
-        // Шах
+        // Шах и мат
         if(gameController.boardState.DetectCheck(enemyColor))
         {
             Debug.Log($"CHECK TO {enemyColor} KING");
