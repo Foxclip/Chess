@@ -4,6 +4,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.Serialization;
+using System.Xml;
 using UnityEngine;
 
 /// <summary>
@@ -24,11 +26,11 @@ public class FigureMove
     /// </summary>
     public bool passedFirstCheck;
 
-    public FigureMove(Vector2Int from, Vector2Int to, bool notMarkedAsIllegalRightAway)
+    public FigureMove(Vector2Int from, Vector2Int to, bool passedFirstCheck)
     {
         this.from = from;
         this.to = to;
-        this.passedFirstCheck = notMarkedAsIllegalRightAway;
+        this.passedFirstCheck = passedFirstCheck;
     }
 }
 
@@ -102,6 +104,13 @@ public struct Vector2Int
 /// <summary>
 /// Абстрактный класс фигуры
 /// </summary>
+[DataContract(Name = "Figure")]
+[KnownType(typeof(Pawn))]
+[KnownType(typeof(Rook))]
+[KnownType(typeof(Knight))]
+[KnownType(typeof(Bishop))]
+[KnownType(typeof(King))]
+[KnownType(typeof(Queen))]
 public abstract class Figure
 {
     /// <summary>
@@ -124,10 +133,12 @@ public abstract class Figure
     /// <summary>
     /// Позиция x фигуры на доске
     /// </summary>
+    [DataMember]
     public int x;
     /// <summary>
     /// Позиция y фигуры на доске
     /// </summary>
+    [DataMember]
     public int y;
     /// <summary>
     /// Позиция фигуры на доске
@@ -150,14 +161,17 @@ public abstract class Figure
     /// <summary>
     /// Цвет фигуры (белый или черный)
     /// </summary>
+    [DataMember]
     public FigureColor color;
     /// <summary>
     /// Доска на которой находится фигура
     /// </summary>
+    [DataMember]
     public BoardState boardState;
     /// <summary>
     /// Количество ходов, совершенное фигурой с начала партии
     /// </summary>
+    [DataMember]
     public int moveCount = 0;
     /// <summary>
     /// Временный список, используется функциями GetAllMoves фигур
@@ -183,7 +197,6 @@ public abstract class Figure
         this.y = y;
         this.color = color;
         this.boardState = boardState ?? throw new ArgumentNullException("boardState");
-        boardState.SetFigureAtCell(x, y, this);
     }
 
     /// <summary>
@@ -252,9 +265,6 @@ public abstract class Figure
         figure.Pos = newPos;
         figure.movedCallback?.Invoke(newPos);
         figure.moveCount++;
-        // Изменяем состояние доски
-        figure.boardState.SetFigureAtCell(oldPos, null);
-        figure.boardState.SetFigureAtCell(newPos, figure);
     }
 
     /// <summary>
@@ -276,16 +286,12 @@ public abstract class Figure
     }
 
     /// <summary>
-    /// Удалить фигуру с доски. Также вызывет deletedCallback.
+    /// Удаляет фигуру с доски. Также вызывет deletedCallback.
     /// </summary>
     public void Delete()
     {
+        boardState.figures.Remove(this);
         deletedCallback?.Invoke();
-        if(boardState.GetFigureAtCell(Pos) == null)
-        {
-            throw new InvalidOperationException("Возможно фигура уже была удалена");
-        }
-        boardState.SetFigureAtCell(Pos, null);
     }
 
     /// <summary>
@@ -318,7 +324,7 @@ public abstract class Figure
         bool canTakePiece = takePieces && figureAtCell != null && figureAtCell.color.Equals(GetEnemyColor());
         if((canFreeMove || canTakePiece) && inBounds)
         {
-            tempMoveList.Add(new FigureMove(Pos, new Vector2Int(x, y), notMarkedAsIllegalRightAway: true));
+            tempMoveList.Add(new FigureMove(Pos, new Vector2Int(x, y), passedFirstCheck: true));
         }
     }
 
@@ -351,6 +357,7 @@ public abstract class Figure
 /// <summary>
 /// Класс пешки.
 /// </summary>
+[DataContract(Name = "Pawn")]
 public class Pawn: Figure
 {
     /// <summary>
@@ -420,6 +427,7 @@ public class Pawn: Figure
 /// <summary>
 /// Класс ладьи.
 /// </summary>
+[DataContract(Name = "Rook")]
 public class Rook : Figure
 {
     /// <summary>
@@ -447,6 +455,7 @@ public class Rook : Figure
 /// <summary>
 /// Класс коня.
 /// </summary>
+[DataContract(Name = "Knight")]
 public class Knight : Figure
 {
     /// <summary>
@@ -478,6 +487,7 @@ public class Knight : Figure
 /// <summary>
 /// Класс слона.
 /// </summary>
+[DataContract(Name = "Bishop")]
 public class Bishop : Figure
 {
     /// <summary>
@@ -506,6 +516,7 @@ public class Bishop : Figure
 /// <summary>
 /// Класс короля.
 /// </summary>
+[DataContract(Name = "King")]
 public class King : Figure
 {
     /// <summary>
@@ -643,6 +654,7 @@ public class King : Figure
 /// <summary>
 /// Класс ферзя.
 /// </summary>
+[DataContract(Name = "Queen")]
 public class Queen : Figure
 {
     /// <summary>
@@ -674,15 +686,18 @@ public class Queen : Figure
 /// <summary>
 /// Класс доски.
 /// </summary>
+[DataContract(Name = "BoardState", IsReference = true)]
 public class BoardState
 {
     /// <summary>
-    /// Массив с фигурами.
+    /// Список фигур.
     /// </summary>
-    private readonly Figure[,] board = new Figure[8, 8];
+    [DataMember]
+    public readonly List<Figure> figures = new List<Figure>();
     /// <summary>
     /// Цвет фигур, которые сейчас ходят.
     /// </summary>
+    [DataMember]
     public Figure.FigureColor turnColor;
 
     /// <summary>
@@ -690,6 +705,7 @@ public class BoardState
     /// </summary>
     public BoardState()
     {
+
         // Сокращенные названия
         Figure.FigureColor white = Figure.FigureColor.white;
         Figure.FigureColor black = Figure.FigureColor.black;
@@ -697,34 +713,34 @@ public class BoardState
         // Белые пешки
         for(int x = 0; x < 8; x++)
         {
-            new Pawn(x, 1, white, this);
+            figures.Add(new Pawn(x, 1, white, this));
         }
         // Черные пешки
         for(int x = 0; x < 8; x++)
         {
-            new Pawn(x, 6, black, this);
+            figures.Add(new Pawn(x, 6, black, this));
         }
         // Ладьи
-        new Rook(0, 0, white, this);
-        new Rook(7, 0, white, this);
-        new Rook(0, 7, black, this);
-        new Rook(7, 7, black, this);
+        figures.Add(new Rook(0, 0, white, this));
+        figures.Add(new Rook(7, 0, white, this));
+        figures.Add(new Rook(0, 7, black, this));
+        figures.Add(new Rook(7, 7, black, this));
         // Кони
-        new Knight(1, 0, white, this);
-        new Knight(6, 0, white, this);
-        new Knight(1, 7, black, this);
-        new Knight(6, 7, black, this);
+        figures.Add(new Knight(1, 0, white, this));
+        figures.Add(new Knight(6, 0, white, this));
+        figures.Add(new Knight(1, 7, black, this));
+        figures.Add(new Knight(6, 7, black, this));
         // Слоны
-        new Bishop(2, 0, white, this);
-        new Bishop(5, 0, white, this);
-        new Bishop(2, 7, black, this);
-        new Bishop(5, 7, black, this);
+        figures.Add(new Bishop(2, 0, white, this));
+        figures.Add(new Bishop(5, 0, white, this));
+        figures.Add(new Bishop(2, 7, black, this));
+        figures.Add(new Bishop(5, 7, black, this));
         // Короли
-        new King(4, 0, white, this);
-        new King(4, 7, black, this);
+        figures.Add(new King(4, 0, white, this));
+        figures.Add(new King(4, 7, black, this));
         // Ферзи
-        new Queen(3, 0, white, this);
-        new Queen(3, 7, black, this);
+        figures.Add(new Queen(3, 0, white, this));
+        figures.Add(new Queen(3, 7, black, this));
 
         // Белые ходят первыми
         turnColor = Figure.FigureColor.white;
@@ -735,17 +751,11 @@ public class BoardState
     /// </summary>
     public BoardState(BoardState original)
     {
-        board = new Figure[8, 8];
         turnColor = original.turnColor;
-        for(int x = 0; x < 8; x++)
+        figures = new List<Figure>();
+        foreach(Figure figure in original.figures)
         {
-            for(int y = 0; y < 8; y++)
-            {
-                if(original.board[x, y] != null)
-                {
-                    board[x, y] = original.board[x, y].Copy(this);
-                }
-            }
+            figures.Add(figure.Copy(this));
         }
     }
 
@@ -783,7 +793,7 @@ public class BoardState
     /// <returns>Фигура стоящая в клетке или null если там ничего нет.</returns>
     public Figure GetFigureAtCell(int x, int y)
     {
-        return CoordinatesInBounds(x, y) ? board[x, y] : null;
+        return GetFigureAtCell(new Vector2Int(x, y));
     }
 
     /// <summary>
@@ -792,29 +802,22 @@ public class BoardState
     /// <returns>Фигура стоящая в клетке или null если там ничего нет.</returns>
     public Figure GetFigureAtCell(Vector2Int cell)
     {
-        return GetFigureAtCell(cell.x, cell.y);
-    }
-
-    /// <summary>
-    /// Устанавливает фигуру в клетку.
-    /// </summary>
-    /// <param name="figure">Новая фигура.</param>
-    public void SetFigureAtCell(int x, int y, Figure figure)
-    {
-        if(!CoordinatesInBounds(x, y))
+        List<Figure> figuresAtCell = figures.FindAll(figure => figure.Pos == cell);
+        if(figuresAtCell.Count > 1)
         {
-            throw new ArgumentOutOfRangeException("Координаты за пределами доски");
-        }
-        board[x, y] = figure;
-    }
+            string figureStr = "";
+            foreach(Figure figure in figuresAtCell)
+            {
+                figureStr += " " + figure.GetType().Name;
+            }
 
-    /// <summary>
-    /// Устанавливает фигуру в клетку.
-    /// </summary>
-    /// <param name="figure">Новая фигура.</param>
-    public void SetFigureAtCell(Vector2Int pos, Figure figure)
-    {
-        SetFigureAtCell(pos.x, pos.y, figure);
+            throw new InvalidOperationException($"В клетке {cell} находятся {figuresAtCell.Count} фигуры: {figureStr}");
+        }
+        if(figuresAtCell.Count == 0)
+        {
+            return null;
+        }
+        return figuresAtCell[0];
     }
 
     /// <summary>
@@ -823,7 +826,7 @@ public class BoardState
     /// <returns>Список фигур на доске.</returns>
     public List<Figure> GetFigures()
     {
-        return (from Figure figure in board where figure != null select figure).ToList();
+        return figures;
     }
 
     /// <summary>
@@ -938,6 +941,22 @@ public class BoardState
             throw new InvalidOperationException("Невозможно совершить ход: не найдена фигура");
         }
         figure.ExecuteMove(move);
+    }
+
+    /// <summary>
+    /// Сохранить в файл.
+    /// </summary>
+    /// <param name="filename"></param>
+    public void Serialize(string filename)
+    {
+        var settings = new XmlWriterSettings {
+            Indent = true,
+            IndentChars = "    "
+        };
+        XmlWriter writer = XmlWriter.Create(filename, settings);
+        DataContractSerializer ser = new DataContractSerializer(typeof(BoardState));
+        ser.WriteObject(writer, this);
+        writer.Close();
     }
 
 }

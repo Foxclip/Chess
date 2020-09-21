@@ -55,6 +55,17 @@ public class GameController : MonoBehaviour
         }
     }
 
+    private void Update()
+    {
+        // Сохраняем состояние доски в файл
+        if(Input.GetKeyDown("s"))
+        {
+            string filename = "boardState.xml";
+            boardState.Serialize(filename);
+            Debug.Log($"Saved to file {filename}");
+        }
+    }
+
     public void Turn()
     {
         // Убираем выделение

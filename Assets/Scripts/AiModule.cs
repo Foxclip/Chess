@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 public class AiModule
 {
-    private static Random random = new Random();
+    private static readonly Random random = new Random();
 
     /// <summary>
     /// Совершить ход.
