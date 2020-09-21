@@ -17,7 +17,7 @@ public class AiModule
             return;
         }
         // Случайный ход
-        List<FigureMove> availableMoves = boardState.GetMovesByColor(boardState.turnColor, true);
+        List<FigureMove> availableMoves = boardState.GetLegalMoves();
         FigureMove randomMove = availableMoves[random.Next(availableMoves.Count)];
         boardState.ExecuteMove(randomMove);
     }

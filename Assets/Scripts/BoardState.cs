@@ -22,13 +22,13 @@ public class FigureMove
     /// <summary>
     /// Некоторые ходы могут отмечаться как запрещенные сразу в методе Move
     /// </summary>
-    public bool notMarkedAsIllegalRightAway;
+    public bool passedFirstCheck;
 
     public FigureMove(Vector2Int from, Vector2Int to, bool notMarkedAsIllegalRightAway)
     {
         this.from = from;
         this.to = to;
-        this.notMarkedAsIllegalRightAway = notMarkedAsIllegalRightAway;
+        this.passedFirstCheck = notMarkedAsIllegalRightAway;
     }
 }
 
@@ -208,8 +208,7 @@ public abstract class Figure
     /// <returns>Список разрешенных ходов данной фигуры.</returns>
     public List<FigureMove> GetLegalMoves()
     {
-        List<FigureMove> allMoves = GetAllMoves(special: true);
-        List<FigureMove> moves = boardState.legalMoves.FindAll((move) => move.from == Pos && move.notMarkedAsIllegalRightAway);
+        List<FigureMove> moves = boardState.GetLegalMoves().FindAll((move) => move.from == Pos);
         return moves;
     }
 
@@ -262,7 +261,7 @@ public abstract class Figure
     /// Совершить ход фигурой. Специальные ходы (рокировка, взятие на проходе) описыватся в override методах дочерних классов.
     /// </summary>
     /// <param name="updateLegalMoves">Обновить список разрешенных ходов.</param>
-    public virtual void ExecuteMove(FigureMove move, bool updateLegalMoves = true)
+    public virtual void ExecuteMove(FigureMove move)
     {
         if(color != boardState.turnColor)
         {
@@ -274,10 +273,6 @@ public abstract class Figure
         }
         MoveFigure(this, move.to, takeFigure: true);
         boardState.turnColor = InvertColor(boardState.turnColor);
-        if(updateLegalMoves)
-        {
-            boardState.UpdateLegalMoves();
-        }
     }
 
     /// <summary>
@@ -399,7 +394,7 @@ public class Pawn: Figure
     /// <summary>
     /// Двигает пешку в другую клетку.
     /// </summary>
-    public override void ExecuteMove(FigureMove move, bool updateLegalMoves)
+    public override void ExecuteMove(FigureMove move)
     {
         // Взятие на проходе
         bool longDistanceY = Math.Abs(move.to.y - y) > 1;
@@ -418,7 +413,7 @@ public class Pawn: Figure
             }
         }
         // Вызов базового метода ExecuteMove
-        base.ExecuteMove(move, updateLegalMoves);
+        base.ExecuteMove(move);
     }
 }
 
@@ -625,7 +620,7 @@ public class King : Figure
     /// <summary>
     /// Двигает короля в другую клетку.
     /// </summary>
-    public override void ExecuteMove(FigureMove move, bool updateLegalMoves)
+    public override void ExecuteMove(FigureMove move)
     {
         if(move.GetType() == typeof(CastlingMove))
         {
@@ -640,7 +635,7 @@ public class King : Figure
             MoveFigure(rook, castlingMove.rookTo, takeFigure: false);
         }
         // Вызов базового метода Move
-        base.ExecuteMove(move, updateLegalMoves);
+        base.ExecuteMove(move);
     }
 
 }
@@ -685,10 +680,6 @@ public class BoardState
     /// Массив с фигурами.
     /// </summary>
     private readonly Figure[,] board = new Figure[8, 8];
-    /// <summary>
-    /// Список всех разрешенных (не приводящих к шаху) ходов фигур того цвета, которые сейчас ходят
-    /// </summary>
-    public readonly List<FigureMove> legalMoves = new List<FigureMove>();
     /// <summary>
     /// Цвет фигур, которые сейчас ходят.
     /// </summary>
@@ -737,8 +728,6 @@ public class BoardState
 
         // Белые ходят первыми
         turnColor = Figure.FigureColor.white;
-        // Обновляем список разрешенных ходов
-        UpdateLegalMoves();
     }
 
     /// <summary>
@@ -747,7 +736,6 @@ public class BoardState
     public BoardState(BoardState original)
     {
         board = new Figure[8, 8];
-        legalMoves = original.legalMoves;
         turnColor = original.turnColor;
         for(int x = 0; x < 8; x++)
         {
@@ -874,7 +862,7 @@ public class BoardState
     public bool DetectMate()
     {
         // Определение мата
-        return legalMoves.Count == 0;
+        return GetLegalMoves().Count == 0;
     }
 
     /// <summary>
@@ -915,22 +903,28 @@ public class BoardState
     /// Обновляет список разрешенных (не приводящих к шаху) ходов фигур того цвета, который сейчас ходит.
     /// </summary>
     /// <param name="color"></param>
-    public void UpdateLegalMoves()
+    public List<FigureMove> GetLegalMoves()
     {
-        legalMoves.Clear();
+        List<FigureMove> legalMoves = new List<FigureMove>();
         // Получаем список возможных ходов
         List<FigureMove> ownMoves = GetMovesByColor(turnColor, special: true);
         // Пытаемся сделать ход
         foreach(FigureMove ownMove in ownMoves)
         {
+            // Если ход уже отмечен как запрещенный, его можно не проверять
+            if(!ownMove.passedFirstCheck)
+            {
+                continue;
+            }
             BoardState virtualBoard = new BoardState(this);
             Figure figure = virtualBoard.GetFigureAtCell(ownMove.from);
-            figure.ExecuteMove(ownMove, updateLegalMoves: false);
+            figure.ExecuteMove(ownMove);
             if(!virtualBoard.DetectCheck(turnColor))
             {
                 legalMoves.Add(ownMove);
             }
         }
+        return legalMoves;
     }
 
     /// <summary>

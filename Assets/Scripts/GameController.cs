@@ -60,7 +60,7 @@ public class GameController : MonoBehaviour
         // Убираем выделение
         PieceController.ClearSelection();
 
-        Debug.Log($"{boardState.turnColor} has {boardState.legalMoves.Count} moves");
+        Debug.Log($"{boardState.turnColor} has {boardState.GetLegalMoves().Count} moves");
 
         // Шах и мат
         if(boardState.DetectCheck(boardState.turnColor))
