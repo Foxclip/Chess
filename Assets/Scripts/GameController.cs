@@ -54,4 +54,29 @@ public class GameController : MonoBehaviour
             LoadGameObject(figure);
         }
     }
+
+    public void Turn()
+    {
+        // Убираем выделение
+        PieceController.ClearSelection();
+
+        Debug.Log($"{boardState.turnColor} has {boardState.legalMoves.Count} moves");
+
+        // Шах и мат
+        if(boardState.DetectCheck(boardState.turnColor))
+        {
+            Debug.Log($"CHECK TO {boardState.turnColor} KING");
+        }
+        if(boardState.DetectMate())
+        {
+            Debug.Log($"MATE TO {boardState.turnColor} KING");
+        }
+
+        // Ход ИИ
+        if(boardState.turnColor == Figure.FigureColor.black)
+        {
+            AiModule.AiMove(boardState);
+            Turn();
+        }
+    }
 }

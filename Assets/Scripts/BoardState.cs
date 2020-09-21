@@ -261,14 +261,23 @@ public abstract class Figure
     /// <summary>
     /// Совершить ход фигурой. Специальные ходы (рокировка, взятие на проходе) описыватся в override методах дочерних классов.
     /// </summary>
-    public virtual void ExecuteMove(FigureMove move)
+    /// <param name="updateLegalMoves">Обновить список разрешенных ходов.</param>
+    public virtual void ExecuteMove(FigureMove move, bool updateLegalMoves = true)
     {
+        if(color != boardState.turnColor)
+        {
+            throw new InvalidOperationException($"Невозможно совершить ход: сейчас ходит {boardState.turnColor}, а цвет фигуры {color}");
+        }
         if(move.from != Pos)
         {
-            throw new ArgumentException("Начальная клетка FigureMove не совпадает с позицией фигуры");
+            throw new ArgumentException($"Начальная клетка FigureMove {move.from} не совпадает с позицией фигуры {Pos}");
         }
         MoveFigure(this, move.to, takeFigure: true);
         boardState.turnColor = InvertColor(boardState.turnColor);
+        if(updateLegalMoves)
+        {
+            boardState.UpdateLegalMoves();
+        }
     }
 
     /// <summary>
@@ -390,7 +399,7 @@ public class Pawn: Figure
     /// <summary>
     /// Двигает пешку в другую клетку.
     /// </summary>
-    public override void ExecuteMove(FigureMove move)
+    public override void ExecuteMove(FigureMove move, bool updateLegalMoves)
     {
         // Взятие на проходе
         bool longDistanceY = Math.Abs(move.to.y - y) > 1;
@@ -409,7 +418,7 @@ public class Pawn: Figure
             }
         }
         // Вызов базового метода ExecuteMove
-        base.ExecuteMove(move);
+        base.ExecuteMove(move, updateLegalMoves);
     }
 }
 
@@ -616,7 +625,7 @@ public class King : Figure
     /// <summary>
     /// Двигает короля в другую клетку.
     /// </summary>
-    public override void ExecuteMove(FigureMove move)
+    public override void ExecuteMove(FigureMove move, bool updateLegalMoves)
     {
         if(move.GetType() == typeof(CastlingMove))
         {
@@ -631,7 +640,7 @@ public class King : Figure
             MoveFigure(rook, castlingMove.rookTo, takeFigure: false);
         }
         // Вызов базового метода Move
-        base.ExecuteMove(move);
+        base.ExecuteMove(move, updateLegalMoves);
     }
 
 }
@@ -916,12 +925,25 @@ public class BoardState
         {
             BoardState virtualBoard = new BoardState(this);
             Figure figure = virtualBoard.GetFigureAtCell(ownMove.from);
-            figure.ExecuteMove(ownMove);
+            figure.ExecuteMove(ownMove, updateLegalMoves: false);
             if(!virtualBoard.DetectCheck(turnColor))
             {
                 legalMoves.Add(ownMove);
             }
         }
+    }
+
+    /// <summary>
+    /// Совершить ход.
+    /// </summary>
+    public void ExecuteMove(FigureMove move)
+    {
+        Figure figure = GetFigureAtCell(move.from);
+        if(figure == null)
+        {
+            throw new InvalidOperationException("Невозможно совершить ход: не найдена фигура");
+        }
+        figure.ExecuteMove(move);
     }
 
 }
