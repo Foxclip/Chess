@@ -168,10 +168,6 @@ public abstract class Figure
     /// </summary>
     [DataMember]
     public int moveCount = 0;
-    /// <summary>
-    /// Временный список, используется функциями GetAllMoves фигур
-    /// </summary>
-    protected List<FigureMove> tempMoveList = new List<FigureMove>();
 
     /// <summary>
     /// Получить все ходы фигуры (без учета ходов приводящих к шаху)
@@ -311,7 +307,7 @@ public abstract class Figure
     /// </summary>
     /// <param name="freeMove">Ход в свободную клетку.</param>
     /// <param name="takePieces">Ход со взятием фигуры.</param>
-    public void TestCell(int x, int y, bool freeMove = true, bool takePieces = true)
+    public void TestCell(List<FigureMove> tempList, int x, int y, bool freeMove = true, bool takePieces = true)
     {
         Figure figureAtCell = boardState.GetFigureAtCell(x, y);
         bool inBounds = BoardState.CoordinatesInBounds(x, y);
@@ -319,14 +315,14 @@ public abstract class Figure
         bool canTakePiece = takePieces && figureAtCell != null && figureAtCell.color.Equals(GetEnemyColor());
         if((canFreeMove || canTakePiece) && inBounds)
         {
-            tempMoveList.Add(new FigureMove(Pos, new Vector2Int(x, y), passedFirstCheck: true));
+            tempList.Add(new FigureMove(Pos, new Vector2Int(x, y), passedFirstCheck: true));
         }
     }
 
     /// <summary>
     /// Проверяет, какие ходы фигура может совершить в определенном направлении, ходы записваются во временный список.
     /// </summary>
-    public void TestDirection(int directionX, int directionY)
+    public void TestDirection(List<FigureMove> tempList, int directionX, int directionY)
     {
         if(directionX > 1 || directionX < -1 || directionY > 1 || directionX < -1)
         {
@@ -338,7 +334,7 @@ public abstract class Figure
             int yOffset = offset * directionY;
             int cellX = x + xOffset;
             int cellY = y + yOffset;
-            TestCell(cellX, cellY, takePieces: true);
+            TestCell(tempList, cellX, cellY, takePieces: true);
             bool ranIntoAFigure = boardState.GetFigureAtCell(cellX, cellY) != null;
             bool ranOutOfBounds = !BoardState.CoordinatesInBounds(cellX, cellY);
             if(ranIntoAFigure || ranOutOfBounds)
@@ -347,4 +343,5 @@ public abstract class Figure
             }
         }
     }
+
 }

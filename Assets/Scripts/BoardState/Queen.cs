@@ -20,15 +20,15 @@ public class Queen : Figure
     /// <returns>Все ходы ферзя (включая ходы приводящие к шаху).</returns>
     public override List<FigureMove> GetAllMoves(bool special)
     {
-        tempMoveList.Clear();
-        TestDirection(0, 1);
-        TestDirection(1, 0);
-        TestDirection(0, -1);
-        TestDirection(-1, 0);
-        TestDirection(1, 1);
-        TestDirection(1, -1);
-        TestDirection(-1, -1);
-        TestDirection(-1, 1);
+        List<FigureMove> tempMoveList = new List<FigureMove>();
+        TestDirection(tempMoveList, 0, 1);
+        TestDirection(tempMoveList, 1, 0);
+        TestDirection(tempMoveList, 0, -1);
+        TestDirection(tempMoveList, -1, 0);
+        TestDirection(tempMoveList, 1, 1);
+        TestDirection(tempMoveList, 1, -1);
+        TestDirection(tempMoveList, -1, -1);
+        TestDirection(tempMoveList, -1, 1);
         return tempMoveList;
     }
 }

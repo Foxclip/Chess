@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Xml;
@@ -228,9 +229,8 @@ public class BoardState
     }
 
     /// <summary>
-    /// Обновляет список разрешенных (не приводящих к шаху) ходов фигур того цвета, который сейчас ходит.
+    /// Получает список разрешенных (не приводящих к шаху) ходов фигур того цвета, который сейчас ходит.
     /// </summary>
-    /// <param name="color"></param>
     public List<FigureMove> GetLegalMoves()
     {
         List<FigureMove> legalMoves = new List<FigureMove>();
@@ -271,7 +271,6 @@ public class BoardState
     /// <summary>
     /// Сохранить в файл.
     /// </summary>
-    /// <param name="filename"></param>
     public void Serialize(string filename)
     {
         var settings = new XmlWriterSettings {
@@ -282,6 +281,20 @@ public class BoardState
         DataContractSerializer ser = new DataContractSerializer(typeof(BoardState));
         ser.WriteObject(writer, this);
         writer.Close();
+    }
+
+    /// <summary>
+    /// Загрузить из файла.
+    /// </summary>
+    public static BoardState Deserialize(string filename)
+    {
+        FileStream fs = new FileStream(filename, FileMode.Open);
+        XmlDictionaryReader reader = XmlDictionaryReader.CreateTextReader(fs, new XmlDictionaryReaderQuotas());
+        DataContractSerializer ser = new DataContractSerializer(typeof(BoardState));
+        BoardState deserializedObject = (BoardState)ser.ReadObject(reader, true);
+        reader.Close();
+        fs.Close();
+        return deserializedObject;
     }
 
 }

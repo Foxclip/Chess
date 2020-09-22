@@ -20,11 +20,11 @@ public class Bishop : Figure
     /// <returns>Все ходы слона (включая ходы приводящие к шаху).</returns>
     public override List<FigureMove> GetAllMoves(bool special)
     {
-        tempMoveList.Clear();
-        TestDirection(1, 1);
-        TestDirection(1, -1);
-        TestDirection(-1, -1);
-        TestDirection(-1, 1);
+        List<FigureMove> tempMoveList = new List<FigureMove>();
+        TestDirection(tempMoveList, 1, 1);
+        TestDirection(tempMoveList, 1, -1);
+        TestDirection(tempMoveList, -1, -1);
+        TestDirection(tempMoveList, -1, 1);
         return tempMoveList;
     }
 

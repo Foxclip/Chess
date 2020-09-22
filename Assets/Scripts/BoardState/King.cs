@@ -33,7 +33,7 @@ public class King : Figure
     /// Проверяет, возможна ли рокировка с определнной стороны. Ход записывается во временный список.
     /// </summary>
     /// <param name="side">Сторона рокировки.</param>
-    public void TestCastling(CastlingSide side)
+    public void TestCastling(List<FigureMove> tempList, CastlingSide side)
     {
         // Определяем клетки между королем и ладьей (они должны быть свободны).
         List<Vector2Int> cellsBetweenKingAndRook = new List<Vector2Int>();
@@ -81,7 +81,7 @@ public class King : Figure
         if(figuresNotMoved && cellsBetweenAreFree)
         {
             int newX = side == CastlingSide.queenside ? 2 : 6;
-            tempMoveList.Add(
+            tempList.Add(
                 new CastlingMove(
                     from: Pos,
                     to: new Vector2Int(newX, y),
@@ -100,19 +100,19 @@ public class King : Figure
     /// <returns>Все ходы короля (включая ходы приводящие к шаху).</returns>
     public override List<FigureMove> GetAllMoves(bool special)
     {
-        tempMoveList.Clear();
-        TestCell(x - 1, y - 1);
-        TestCell(x - 1, y + 0);
-        TestCell(x - 1, y + 1);
-        TestCell(x + 0, y + 1);
-        TestCell(x + 1, y + 1);
-        TestCell(x + 1, y + 0);
-        TestCell(x + 1, y - 1);
-        TestCell(x + 0, y - 1);
+        List<FigureMove> tempMoveList = new List<FigureMove>();
+        TestCell(tempMoveList, x - 1, y - 1);
+        TestCell(tempMoveList, x - 1, y + 0);
+        TestCell(tempMoveList, x - 1, y + 1);
+        TestCell(tempMoveList, x + 0, y + 1);
+        TestCell(tempMoveList, x + 1, y + 1);
+        TestCell(tempMoveList, x + 1, y + 0);
+        TestCell(tempMoveList, x + 1, y - 1);
+        TestCell(tempMoveList, x + 0, y - 1);
         if(special)
         {
-            TestCastling(CastlingSide.queenside);
-            TestCastling(CastlingSide.kingside);
+            TestCastling(tempMoveList, CastlingSide.queenside);
+            TestCastling(tempMoveList, CastlingSide.kingside);
         }
         return tempMoveList;
     }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 
 public class GameController : MonoBehaviour
@@ -19,6 +20,12 @@ public class GameController : MonoBehaviour
     /// </summary>
     [HideInInspector]
     public BoardState boardState;
+
+    /// <summary>
+    /// Если этот файл, существует, то состояние доски будет загружено из него.
+    /// Сохранение идет также в этот файл.
+    /// </summary>
+    public const string savedStateFileName = "boardState.xml";
 
     /// <summary>
     /// Загружает префаб фигуры и привязывает его к фигуре BoardState.
@@ -45,9 +52,16 @@ public class GameController : MonoBehaviour
 
     void Start()
     {
-        // Создаем доску BoardState и расставляем фигуры
-        boardState = new BoardState();
-        // Создаем объекты привязываем их к BoardState фигурам.
+        // Если состояние доски было сохранено в файл, загружаем из файла
+        if(File.Exists(savedStateFileName))
+        {
+            boardState = BoardState.Deserialize(savedStateFileName);
+        }
+        else
+        {
+            boardState = new BoardState();
+        }
+        // Создаем объекты Unity и привязываем их к BoardState фигурам.
         List<Figure> figures = boardState.GetFigures();
         foreach(Figure figure in figures)
         {
@@ -57,12 +71,11 @@ public class GameController : MonoBehaviour
 
     private void Update()
     {
-        // Сохраняем состояние доски в файл
         if(Input.GetKeyDown("s"))
         {
-            string filename = "boardState.xml";
-            boardState.Serialize(filename);
-            Debug.Log($"Saved to file {filename}");
+            // Сохраняем состояние доски в файл
+            boardState.Serialize(savedStateFileName);
+            Debug.Log($"Saved to file {savedStateFileName}");
         }
     }
 
@@ -71,6 +84,7 @@ public class GameController : MonoBehaviour
         // Убираем выделение
         PieceController.ClearSelection();
 
+        // Количество разрешенных ходов
         Debug.Log($"{boardState.turnColor} has {boardState.GetLegalMoves().Count} moves");
 
         // Шах и мат

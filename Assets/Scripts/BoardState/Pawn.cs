@@ -21,19 +21,19 @@ public class Pawn : Figure
     /// <returns>Все ходы пешки (включая ходы приводящие к шаху).</returns>
     public override List<FigureMove> GetAllMoves(bool special)
     {
-        tempMoveList.Clear();
+        List<FigureMove> tempMoveList = new List<FigureMove>();
         int direction = color == FigureColor.white ? 1 : -1;
 
         // Ход на 1 клетку вперед
-        TestCell(x, y + direction, takePieces: false);
+        TestCell(tempMoveList, x, y + direction, takePieces: false);
         // Ход на 2 клетки вперед
         if(moveCount == 0 && boardState.GetFigureAtCell(x, y + direction) == null)
         {
-            TestCell(x, y + direction * 2, takePieces: false);
+            TestCell(tempMoveList, x, y + direction * 2, takePieces: false);
         }
         // Ходы по диагонали
-        TestCell(x - 1, y + direction, freeMove: false);
-        TestCell(x + 1, y + direction, freeMove: false);
+        TestCell(tempMoveList, x - 1, y + direction, freeMove: false);
+        TestCell(tempMoveList, x + 1, y + direction, freeMove: false);
 
         return tempMoveList;
     }

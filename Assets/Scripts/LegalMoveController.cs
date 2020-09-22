@@ -10,7 +10,7 @@ public class LegalMoveController : MonoBehaviour
 {
 
     /// <summary>
-    /// К какой фигуре относится метка.
+    /// К какому Unity объекту относится метка.
     /// </summary>
     public Transform piece;
     /// <summary>

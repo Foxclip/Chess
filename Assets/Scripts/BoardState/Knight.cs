@@ -20,15 +20,15 @@ public class Knight : Figure
     /// <returns>Все ходы коня (включая ходы приводящие к шаху).</returns>
     public override List<FigureMove> GetAllMoves(bool special)
     {
-        tempMoveList.Clear();
-        TestCell(x - 1, y + 2);
-        TestCell(x + 1, y + 2);
-        TestCell(x + 2, y - 1);
-        TestCell(x + 2, y + 1);
-        TestCell(x - 1, y - 2);
-        TestCell(x + 1, y - 2);
-        TestCell(x - 2, y + 1);
-        TestCell(x - 2, y - 1);
+        List<FigureMove> tempMoveList = new List<FigureMove>();
+        TestCell(tempMoveList, x - 1, y + 2);
+        TestCell(tempMoveList, x + 1, y + 2);
+        TestCell(tempMoveList, x + 2, y - 1);
+        TestCell(tempMoveList, x + 2, y + 1);
+        TestCell(tempMoveList, x - 1, y - 2);
+        TestCell(tempMoveList, x + 1, y - 2);
+        TestCell(tempMoveList, x - 2, y + 1);
+        TestCell(tempMoveList, x - 2, y - 1);
         return tempMoveList;
     }
 }
