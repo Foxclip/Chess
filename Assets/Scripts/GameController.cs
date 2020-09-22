@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class GameController : MonoBehaviour
 {
@@ -16,10 +17,20 @@ public class GameController : MonoBehaviour
     public GameObject illegalMoveCell;
 
     /// <summary>
+    /// Текст на экране после завершения партии.
+    /// </summary>
+    public Image endgameText;
+
+    /// <summary>
     /// Доска BoardState, на которой находятся фигуры.
     /// </summary>
     [HideInInspector]
     public BoardState boardState;
+
+    /// <summary>
+    /// Состояние после завершения партии.
+    /// </summary>
+    public bool gameEnded = false;
 
     /// <summary>
     /// Если этот файл, существует, то состояние доски будет загружено из него.
@@ -95,6 +106,11 @@ public class GameController : MonoBehaviour
         if(boardState.DetectMate())
         {
             Debug.Log($"MATE TO {boardState.turnColor} KING");
+            gameEnded = true;
+            endgameText.gameObject.SetActive(true);
+            string text = boardState.turnColor == Figure.FigureColor.black ? "Белые выиграли" : "Черные выграли";
+            endgameText.transform.GetChild(0).GetComponent<Text>().text = text;
+            return;
         }
 
         // Ход ИИ

@@ -60,6 +60,12 @@ public class PieceController : MonoBehaviour
 
     private void OnMouseDown()
     {
+        // Нельзя ходить после конца партии
+        if(gameController.gameEnded)
+        {
+            return;
+        }
+
         // Если фигура выбрана, убираем выделение
         if(selectedPiece == gameObject)
         {

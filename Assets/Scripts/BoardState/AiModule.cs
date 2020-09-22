@@ -11,10 +11,9 @@ public class AiModule
     /// </summary>
     public static void AiMove(BoardState boardState)
     {
-        // Если мат то ходить некуда
         if(boardState.DetectMate())
         {
-            return;
+            throw new InvalidOperationException("Невозможно сделать ход: поставлен мат");
         }
         // Случайный ход
         List<FigureMove> availableMoves = boardState.GetLegalMoves();
