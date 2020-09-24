@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 652495766912951900}
   - component: {fileID: 652495766912951891}
   m_Layer: 0
-  m_Name: white_rook_1
+  m_Name: white_rook
   m_TagString: rook
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -70,8 +70,8 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
+  m_SortingLayerID: 732918813
+  m_SortingLayer: 1
   m_SortingOrder: 0
   m_Sprite: {fileID: 2724963404071155675, guid: 45dc5514bb7c86145a29ed8ac65fa93a, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -122,5 +122,3 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1937b16a2fc02134a83f2949e6855e01, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveCount: 0
-  kingLegalMoves: []
