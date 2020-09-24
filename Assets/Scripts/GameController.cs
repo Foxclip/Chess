@@ -82,6 +82,18 @@ public class GameController : MonoBehaviour
 
     private void Update()
     {
+        // Настройка камеры
+        Camera camera = Camera.main;
+        if(camera.aspect >= 1)
+        {
+            camera.orthographicSize = 4.0f;
+        }
+        else
+        {
+            camera.orthographicSize = 4.0f / camera.aspect;
+        }
+
+        // Клавиатура
         if(Input.GetKeyDown("s"))
         {
             // Сохраняем состояние доски в файл
