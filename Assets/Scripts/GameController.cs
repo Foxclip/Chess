@@ -107,7 +107,8 @@ public class GameController : MonoBehaviour
         // Убираем выделение
         PieceController.ClearSelection();
 
-        // Количество разрешенных ходов
+        // Обновляем список разрешенных ходов
+        boardState.UpdateLegalMoves();
         Debug.Log($"{boardState.turnColor} has {boardState.GetLegalMoves().Count} moves");
 
         // Шах и мат

@@ -27,6 +27,11 @@ public class BoardState
     public Figure.FigureColor turnColor;
 
     /// <summary>
+    /// Временный список разрешенных ходов цвета, который сейчас ходит.
+    /// </summary>
+    private List<FigureMove> legalMoves = new List<FigureMove>();
+
+    /// <summary>
     /// Конструктор доски. Заполяет доску фигурами как в начале партии.
     /// </summary>
     public BoardState()
@@ -70,6 +75,9 @@ public class BoardState
 
         // Белые ходят первыми
         turnColor = Figure.FigureColor.white;
+
+        // Обновляем список разрешенных ходов
+        UpdateLegalMoves();
     }
 
     /// <summary>
@@ -233,10 +241,19 @@ public class BoardState
     /// </summary>
     public List<FigureMove> GetLegalMoves()
     {
-        List<FigureMove> legalMoves = new List<FigureMove>();
+        // Список обновляется после каждого хода в методе UpdateLegalMoves
+        return legalMoves;
+    }
+
+    /// <summary>
+    /// Обновляет список разрешенных (не приводящих к шаху) ходов фигур того цвета, который сейчас ходит.
+    /// </summary>
+    public void UpdateLegalMoves()
+    {
+        legalMoves.Clear();
         // Получаем список возможных ходов
         List<FigureMove> ownMoves = GetMovesByColor(turnColor, special: true);
-        // Пытаемся сделать ход
+        // Пытаемся сделать ход на виртуальной доске
         foreach(FigureMove ownMove in ownMoves)
         {
             // Если ход уже отмечен как запрещенный, его можно не проверять
@@ -244,15 +261,17 @@ public class BoardState
             {
                 continue;
             }
+            // Создаем виртуальную доску
             BoardState virtualBoard = new BoardState(this);
+            // Двигаем фигуру
             Figure figure = virtualBoard.GetFigureAtCell(ownMove.from);
             figure.ExecuteMove(ownMove);
+            // Если ход не приводит к шаху, то он разрешен
             if(!virtualBoard.DetectCheck(turnColor))
             {
                 legalMoves.Add(ownMove);
             }
         }
-        return legalMoves;
     }
 
     /// <summary>
@@ -294,6 +313,11 @@ public class BoardState
         BoardState deserializedObject = (BoardState)ser.ReadObject(reader, true);
         reader.Close();
         fs.Close();
+
+        // Временный список legalMoves не сохраняется в файл, поэтому его необходимо создать
+        deserializedObject.legalMoves = new List<FigureMove>();
+        deserializedObject.UpdateLegalMoves();
+
         return deserializedObject;
     }
 
