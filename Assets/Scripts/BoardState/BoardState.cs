@@ -32,10 +32,17 @@ public class BoardState
     private List<FigureMove> legalMoves = new List<FigureMove>();
 
     /// <summary>
+    /// Вызывается при создании фигуры.
+    /// </summary>
+    public Action<Figure> figureCreatedCallback;
+
+    /// <summary>
     /// Конструктор доски. Заполяет доску фигурами как в начале партии.
     /// </summary>
-    public BoardState()
+    public BoardState(Action<Figure> figureCreatedCallback = null)
     {
+        // Коллбек, вызывающийся при создании фигуры
+        this.figureCreatedCallback = figureCreatedCallback;
 
         // Сокращенные названия
         Figure.FigureColor white = Figure.FigureColor.white;
@@ -305,7 +312,7 @@ public class BoardState
     /// <summary>
     /// Загрузить из файла.
     /// </summary>
-    public static BoardState Deserialize(string filename)
+    public static BoardState Deserialize(string filename, Action<Figure> figureCreatedCallback = null)
     {
         FileStream fs = new FileStream(filename, FileMode.Open);
         XmlDictionaryReader reader = XmlDictionaryReader.CreateTextReader(fs, new XmlDictionaryReaderQuotas());
@@ -317,6 +324,8 @@ public class BoardState
         // Временный список legalMoves не сохраняется в файл, поэтому его необходимо создать
         deserializedObject.legalMoves = new List<FigureMove>();
         deserializedObject.UpdateLegalMoves();
+        // Коллбек необходимо привязать заново
+        deserializedObject.figureCreatedCallback = figureCreatedCallback;
 
         return deserializedObject;
     }

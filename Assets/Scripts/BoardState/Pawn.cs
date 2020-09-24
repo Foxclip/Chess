@@ -51,6 +51,19 @@ public class Pawn : Figure
     /// </summary>
     public override void ExecuteMove(FigureMove move)
     {
+        // Превращение в ферзя
+        if(move.to.y == 7)
+        {
+            // Удаляем пешку
+            Delete();
+            // Создаем ферзя
+            Queen queen = new Queen(move.to.x, move.to.y, color, boardState);
+            boardState.figures.Add(queen);
+            boardState.figureCreatedCallback?.Invoke(queen);
+            // Пешку двигать не надо, больше делать нечего
+            boardState.turnColor = InvertColor(boardState.turnColor);
+            return;
+        }
         // Взятие на проходе
         bool longDistanceY = Math.Abs(move.to.y - y) > 1;
         if(longDistanceY)

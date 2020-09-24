@@ -66,11 +66,11 @@ public class GameController : MonoBehaviour
         // Если состояние доски было сохранено в файл, загружаем из файла
         if(File.Exists(savedStateFileName))
         {
-            boardState = BoardState.Deserialize(savedStateFileName);
+            boardState = BoardState.Deserialize(savedStateFileName, FigureCreatedCallback);
         }
         else
         {
-            boardState = new BoardState();
+            boardState = new BoardState(FigureCreatedCallback);
         }
         // Создаем объекты Unity и привязываем их к BoardState фигурам.
         List<Figure> figures = boardState.GetFigures();
@@ -100,6 +100,15 @@ public class GameController : MonoBehaviour
             boardState.Serialize(savedStateFileName);
             Debug.Log($"Saved to file {savedStateFileName}");
         }
+    }
+
+    /// <summary>
+    /// Вызывется при создании фигуры
+    /// </summary>
+    /// <param name="figure"></param>
+    private void FigureCreatedCallback(Figure figure)
+    {
+        LoadGameObject(figure);
     }
 
     public void Turn()
