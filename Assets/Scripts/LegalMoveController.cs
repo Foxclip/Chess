@@ -2,11 +2,12 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
+using UnityEngine.EventSystems;
 
 /// <summary>
 /// Метка арзрешенного хода.
 /// </summary>
-public class LegalMoveController : MonoBehaviour
+public class LegalMoveController : MonoBehaviour, IPointerDownHandler
 {
 
     /// <summary>
@@ -26,7 +27,7 @@ public class LegalMoveController : MonoBehaviour
         gameController = GameObject.Find("GameController").GetComponent<GameController>();
     }
 
-    private void OnMouseDown()
+    public void OnPointerDown(PointerEventData pointerEventData)
     {
         PieceController pieceController = piece.GetComponent<PieceController>();
 

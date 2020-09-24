@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
+using UnityEngine.EventSystems;
 
-public class PieceController : MonoBehaviour
+public class PieceController : MonoBehaviour, IPointerDownHandler
 {
     /// <summary>
     /// Привязанная к объекту фигура на доке BoardState.
@@ -58,7 +59,7 @@ public class PieceController : MonoBehaviour
         Destroy(gameObject);
     }
 
-    private void OnMouseDown()
+    public void OnPointerDown(PointerEventData pointerEventData)
     {
         // Нельзя ходить после конца партии
         if(gameController.gameEnded)
