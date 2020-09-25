@@ -21,13 +21,10 @@ public class LegalMoveController : MonoBehaviour, IPointerDownHandler
     public FigureMove move;
 
     private GameController gameController;
-    private ScaleAnimation scaleAnimation;
 
     void Start()
     {
         gameController = GameObject.Find("GameController").GetComponent<GameController>();
-        scaleAnimation = GetComponent<ScaleAnimation>();
-        scaleAnimation.StartAnimation(0.0f, 1.0f);
     }
 
     public void OnPointerDown(PointerEventData pointerEventData)

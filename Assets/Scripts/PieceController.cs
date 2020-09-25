@@ -93,16 +93,27 @@ public class PieceController : MonoBehaviour, IPointerDownHandler
         // Ставим метки на клетки в которые можно ходить
         foreach(FigureMove move in legalMoves)
         {
+            // Создаем метку
             GameObject newObject = Instantiate(gameController.legalMoveCell, new Vector3(move.to.x, move.to.y), Quaternion.identity);
+            // Привязываем объект и ход на BoardState
             LegalMoveController legalMoveController = newObject.GetComponent<LegalMoveController>();
             legalMoveController.piece = transform;
             legalMoveController.move = move;
+            // Запускаем анимацию появления
+            ScaleAnimation scaleAnimation = newObject.GetComponent<ScaleAnimation>();
+            scaleAnimation.StartAnimation(0.0f, 1.0f);
+
             moveCells.Add(newObject);
         }
         // И в которые нельзя из-за шаха
         foreach(FigureMove move in illegalMoves)
         {
+            // Создаем метку
             GameObject newObject = Instantiate(gameController.illegalMoveCell, new Vector3(move.to.x, move.to.y), Quaternion.identity);
+            // Запускаем анимацию появления
+            ScaleAnimation scaleAnimation = newObject.GetComponent<ScaleAnimation>();
+            scaleAnimation.StartAnimation(0.0f, 1.0f);
+
             moveCells.Add(newObject);
         }
 

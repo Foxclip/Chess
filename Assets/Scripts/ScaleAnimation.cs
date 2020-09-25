@@ -29,10 +29,6 @@ public class ScaleAnimation : MonoBehaviour
     /// </summary>
     private bool active = false;
 
-    void Start()
-    {
-    }
-
     void Update()
     {
         if(active) 
@@ -58,6 +54,7 @@ public class ScaleAnimation : MonoBehaviour
     {
         this.beginScale = beginScale;
         this.endScale = endScale;
+        timePassed = 0.0f;
         active = true;
         // Иначе в первом кадре анимации объект будет в исходном размере
         prefabScale = transform.localScale;
