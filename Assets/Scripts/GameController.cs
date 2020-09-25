@@ -80,7 +80,7 @@ public class GameController : MonoBehaviour
         }
     }
 
-    private void Update()
+    void Update()
     {
         // Настройка камеры
         Camera camera = Camera.main;
@@ -99,6 +99,14 @@ public class GameController : MonoBehaviour
             // Сохраняем состояние доски в файл
             boardState.Serialize(savedStateFileName);
             Debug.Log($"Saved to file {savedStateFileName}");
+        }
+        // Мышь (или тап на экран)
+        if(Input.GetMouseButtonDown(0))
+        {
+            if(Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out RaycastHit hit))
+            {
+                hit.collider.gameObject.BroadcastMessage("ObjectClicked");
+            }
         }
     }
 

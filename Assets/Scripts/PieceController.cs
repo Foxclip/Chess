@@ -61,9 +61,6 @@ public class PieceController : MonoBehaviour
 
     public void ObjectClicked()
     {
-
-        Debug.Log("PIECE CONTROLLER");
-
         // Нельзя ходить после конца партии
         if(gameController.gameEnded)
         {

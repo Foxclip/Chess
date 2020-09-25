@@ -29,9 +29,6 @@ public class LegalMoveController : MonoBehaviour
 
     public void ObjectClicked()
     {
-
-        Debug.Log("LEGAL MOVE CONTROLLER");
-
         PieceController pieceController = piece.GetComponent<PieceController>();
 
         // Перемещение фигуры
