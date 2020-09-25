@@ -40,7 +40,8 @@ public class ScaleAnimation : MonoBehaviour
                 active = false;
             }
             float completionPercentage = timePassed / duration;
-            float objectScale = (float)Utils.MapRange(completionPercentage, 0.0f, 1.0f, beginScale, endScale);
+            float nonlinear = Mathf.Pow(completionPercentage, 0.2f);
+            float objectScale = (float)Utils.MapRange(nonlinear, 0.0f, 1.0f, beginScale, endScale);
             transform.localScale = prefabScale * objectScale;
         }
     }
