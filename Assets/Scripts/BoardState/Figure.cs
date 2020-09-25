@@ -6,7 +6,7 @@ using System.Runtime.Serialization;
 /// <summary>
 /// Ход фигуры
 /// </summary>
-public class FigureMove
+public class FigureMove: IEquatable<FigureMove>
 {
     /// <summary>
     /// Начальная позиция фигуры
@@ -27,6 +27,17 @@ public class FigureMove
         this.to = to;
         this.passedFirstCheck = passedFirstCheck;
     }
+
+    public bool Equals(FigureMove other)
+    {
+        if(other is null)
+        {
+            return false;
+        }
+        return from == other.from && to == other.to;
+    }
+    public override bool Equals(object obj) => Equals(obj as FigureMove);
+    public override int GetHashCode() => (from, to).GetHashCode();
 }
 
 /// <summary>

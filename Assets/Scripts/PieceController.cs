@@ -89,7 +89,7 @@ public class PieceController : MonoBehaviour, IPointerDownHandler
         // Определяем клеки в которые можно ходить и в которые нельзя
         List<FigureMove> allMoves = boardStateFigure.GetAllMoves(special: true);
         List<FigureMove> legalMoves = boardStateFigure.GetLegalMoves();
-        List<FigureMove> illegalMoves = allMoves.Except(legalMoves).ToList();
+        List<FigureMove> illegalMoves = allMoves.Except<FigureMove>(legalMoves).ToList();
         // Ставим метки на клетки в которые можно ходить
         foreach(FigureMove move in legalMoves)
         {

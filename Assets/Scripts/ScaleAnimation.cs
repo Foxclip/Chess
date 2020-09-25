@@ -31,7 +31,6 @@ public class ScaleAnimation : MonoBehaviour
 
     void Start()
     {
-        prefabScale = transform.localScale;
     }
 
     void Update()
@@ -47,7 +46,6 @@ public class ScaleAnimation : MonoBehaviour
             float completionPercentage = timePassed / duration;
             float objectScale = (float)Utils.MapRange(completionPercentage, 0.0f, 1.0f, beginScale, endScale);
             transform.localScale = prefabScale * objectScale;
-            Debug.Log($"{prefabScale} * {objectScale} = {prefabScale * objectScale}");
         }
     }
 
@@ -61,5 +59,8 @@ public class ScaleAnimation : MonoBehaviour
         this.beginScale = beginScale;
         this.endScale = endScale;
         active = true;
+        // Иначе в первом кадре анимации объект будет в исходном размере
+        prefabScale = transform.localScale;
+        transform.localScale = prefabScale * beginScale;
     }
 }
