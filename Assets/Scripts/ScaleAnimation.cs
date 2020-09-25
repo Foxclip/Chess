@@ -9,6 +9,10 @@ public class ScaleAnimation : MonoBehaviour
     /// </summary>
     public float duration = 1.0f;
     /// <summary>
+    /// Нелинейное изменение размера: при маленьких значениях анимация замедляется, при больших - ускоряется
+    /// </summary>
+    public float power = 0.2f;
+    /// <summary>
     /// Время в секундах, оставшееся до конца анимации
     /// </summary>
     private float timePassed = 0.0f;
@@ -40,7 +44,7 @@ public class ScaleAnimation : MonoBehaviour
                 active = false;
             }
             float completionPercentage = timePassed / duration;
-            float nonlinear = Mathf.Pow(completionPercentage, 0.2f);
+            float nonlinear = Mathf.Pow(completionPercentage, power);
             float objectScale = (float)Utils.MapRange(nonlinear, 0.0f, 1.0f, beginScale, endScale);
             transform.localScale = prefabScale * objectScale;
         }
