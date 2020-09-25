@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5364840778564607643}
   - component: {fileID: 4117764229874947776}
+  - component: {fileID: -8967024411091366671}
   m_Layer: 0
   m_Name: illegal_move_cell
   m_TagString: Untagged
@@ -82,3 +83,15 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!114 &-8967024411091366671
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8690374298594442890}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8f57e127cfa9f77489b3323b960cf3e4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
