@@ -25,13 +25,17 @@ public class ScaleAnimation : MonoBehaviour
     /// </summary>
     private float endScale;
     /// <summary>
-    /// Масштаб префаба.
+    /// Сохраненный масштаб спрайта, до применения всех анимаций
     /// </summary>
-    private Vector3 prefabScale;
+    private Vector3 savedSpriteScale;
     /// <summary>
     /// Авктивна анимация или нет.
     /// </summary>
     private bool active = false;
+    /// <summary>
+    /// Спрайт, размер котогоро будет изменяться
+    /// </summary>
+    private Transform spriteTransform;
 
     void Update()
     {
@@ -46,7 +50,7 @@ public class ScaleAnimation : MonoBehaviour
             float completionPercentage = timePassed / duration;
             float nonlinear = Mathf.Pow(completionPercentage, power);
             float objectScale = (float)Utils.MapRange(nonlinear, 0.0f, 1.0f, beginScale, endScale);
-            transform.localScale = prefabScale * objectScale;
+            spriteTransform.localScale = savedSpriteScale * objectScale;
         }
     }
 
@@ -62,7 +66,8 @@ public class ScaleAnimation : MonoBehaviour
         timePassed = 0.0f;
         active = true;
         // Иначе в первом кадре анимации объект будет в исходном размере
-        prefabScale = transform.localScale;
-        transform.localScale = prefabScale * beginScale;
+        spriteTransform = transform.GetChild(0);
+        savedSpriteScale = spriteTransform.localScale;
+        spriteTransform.localScale = savedSpriteScale * beginScale;
     }
 }

@@ -6,9 +6,9 @@ using UnityEngine.EventSystems;
 /// <summary>
 /// Нажатие на доску.
 /// </summary>
-public class BoardClick : MonoBehaviour, IPointerDownHandler
+public class BoardClick : MonoBehaviour
 {
-    public void OnPointerDown(PointerEventData pointerEventData)
+    public void ObjectClicked()
     {
         // Убирвем выделение
         PieceController.ClearSelection();

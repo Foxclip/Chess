@@ -4,7 +4,7 @@ using UnityEngine;
 using System.Linq;
 using UnityEngine.EventSystems;
 
-public class PieceController : MonoBehaviour, IPointerDownHandler
+public class PieceController : MonoBehaviour
 {
     /// <summary>
     /// Привязанная к объекту фигура на доке BoardState.
@@ -59,8 +59,11 @@ public class PieceController : MonoBehaviour, IPointerDownHandler
         Destroy(gameObject);
     }
 
-    public void OnPointerDown(PointerEventData pointerEventData)
+    public void ObjectClicked()
     {
+
+        Debug.Log("PIECE CONTROLLER");
+
         // Нельзя ходить после конца партии
         if(gameController.gameEnded)
         {
@@ -94,7 +97,7 @@ public class PieceController : MonoBehaviour, IPointerDownHandler
         foreach(FigureMove move in legalMoves)
         {
             // Создаем метку
-            GameObject newObject = Instantiate(gameController.legalMoveCell, new Vector3(move.to.x, move.to.y), Quaternion.identity);
+            GameObject newObject = Instantiate(gameController.legalMoveCell, new Vector3(move.to.x, move.to.y, -1.0f), Quaternion.identity);
             // Привязываем объект и ход на BoardState
             LegalMoveController legalMoveController = newObject.GetComponent<LegalMoveController>();
             legalMoveController.piece = transform;
@@ -109,7 +112,7 @@ public class PieceController : MonoBehaviour, IPointerDownHandler
         foreach(FigureMove move in illegalMoves)
         {
             // Создаем метку
-            GameObject newObject = Instantiate(gameController.illegalMoveCell, new Vector3(move.to.x, move.to.y), Quaternion.identity);
+            GameObject newObject = Instantiate(gameController.illegalMoveCell, new Vector3(move.to.x, move.to.y, -1.0f), Quaternion.identity);
             // Запускаем анимацию появления
             ScaleAnimation scaleAnimation = newObject.GetComponent<ScaleAnimation>();
             scaleAnimation.StartAnimation(0.0f, 1.0f);

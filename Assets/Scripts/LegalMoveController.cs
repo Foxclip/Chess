@@ -7,7 +7,7 @@ using UnityEngine.EventSystems;
 /// <summary>
 /// Метка арзрешенного хода.
 /// </summary>
-public class LegalMoveController : MonoBehaviour, IPointerDownHandler
+public class LegalMoveController : MonoBehaviour
 {
 
     /// <summary>
@@ -27,8 +27,11 @@ public class LegalMoveController : MonoBehaviour, IPointerDownHandler
         gameController = GameObject.Find("GameController").GetComponent<GameController>();
     }
 
-    public void OnPointerDown(PointerEventData pointerEventData)
+    public void ObjectClicked()
     {
+
+        Debug.Log("LEGAL MOVE CONTROLLER");
+
         PieceController pieceController = piece.GetComponent<PieceController>();
 
         // Перемещение фигуры
