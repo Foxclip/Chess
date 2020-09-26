@@ -37,11 +37,11 @@ public class ScaleAnimation : MonoBehaviour
     /// </summary>
     private Transform spriteTransform;
 
-    void Update()
+    void FixedUpdate()
     {
         if(active) 
         {
-            timePassed += Time.deltaTime;
+            timePassed += Time.fixedDeltaTime;
             if(timePassed > duration)
             {
                 timePassed = duration;

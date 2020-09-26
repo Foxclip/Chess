@@ -34,11 +34,11 @@ public class MoveAnimation : MonoBehaviour
     /// </summary>
     private Action finishedCallback;
 
-    void Update()
+    void FixedUpdate()
     {
         if(active)
         {
-            timePassed += Time.deltaTime;
+            timePassed += Time.fixedDeltaTime;
             if(timePassed > duration)
             {
                 timePassed = duration;
