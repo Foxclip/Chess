@@ -15,7 +15,10 @@ public class GameController : MonoBehaviour
     /// Метка запрещенного хода.
     /// </summary>
     public GameObject illegalMoveCell;
-
+    /// <summary>
+    /// Красная линия для обзначения шаха.
+    /// </summary>
+    public GameObject redLine;
     /// <summary>
     /// Текст на экране после завершения партии.
     /// </summary>
@@ -49,9 +52,14 @@ public class GameController : MonoBehaviour
     public const string savedStateFileName = "boardState.xml";
 
     /// <summary>
-    /// Блокировка интефейса на время показа анимации
+    /// Блокировка интефейса на время показа анимации.
     /// </summary>
     public bool interfaceLocked = false;
+
+    /// <summary>
+    /// Красные линии, обозначающие шах.
+    /// </summary>
+    public List<GameObject> redLines = new List<GameObject>();
 
     /// <summary>
     /// Загружает префаб фигуры и привязывает его к фигуре BoardState.
@@ -171,6 +179,13 @@ public class GameController : MonoBehaviour
         // Убираем выделение
         PieceController.ClearSelection();
 
+        // Убираем все красные линии
+        foreach(GameObject redLine in redLines)
+        {
+            Destroy(redLine);
+        }
+        redLines.Clear();
+
         // Находим GameObject фигуры
         Transform piece = FindTransformByPos(move.from);
 
@@ -225,10 +240,26 @@ public class GameController : MonoBehaviour
         Debug.Log($"{boardState.turnColor} has {boardState.GetLegalMoves().Count} moves");
 
         // Шах
-        if(boardState.DetectCheck(boardState.turnColor))
+        King king = boardState.FindKingByColor(boardState.turnColor);
+        List<Figure> attackingFigures = boardState.GetFiguresAttackingFigure(king);
+        if(attackingFigures.Count > 0)
         {
             Debug.Log($"CHECK TO {boardState.turnColor} KING");
+            // Рисуем красные линии
+            foreach(Figure figure in attackingFigures)
+            {
+                // Добавляем объект
+                GameObject newRedLine = Instantiate(redLine);
+                redLines.Add(newRedLine);
+                // Запускаем анимацию
+                RedLineController redLineController = newRedLine.GetComponent<RedLineController>();
+                redLineController.StartAnimation(
+                    new Vector3(figure.Pos.x, figure.Pos.y),
+                    new Vector3(king.Pos.x, king.Pos.y)
+                );
+            }
         }
+
         // Мат
         if(boardState.DetectMate())
         {

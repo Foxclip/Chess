@@ -171,12 +171,16 @@ public class BoardState
     }
 
     /// <summary>
-    /// Определяет находится ли клетка под боем фигур определенного цвета.
+    /// Возвращает список фигур атакующих фигуру.
     /// </summary>
-    /// <param name="color">Клетка находится под боем фигур этого цвета.</param>
-    public bool CellIsUnderAttack(Vector2Int cell, Figure.FigureColor color)
+    /// <param name="color">Фигура, которую атакуют.</param>
+    public List<Figure> GetFiguresAttackingFigure(Figure figure)
     {
-        return GetAllCellsUnderAttackByColor(color).Contains(cell);
+        Figure.FigureColor enemyColor = figure.GetEnemyColor();
+        List<FigureMove> colorMoves = GetMovesByColor(enemyColor, special: false);
+        List<FigureMove> attackingMoves = colorMoves.FindAll(move => move.to == figure.Pos).ToList();
+        List<Figure> attackingFigures = attackingMoves.Select(move => GetFigureAtCell(move.from)).ToList();
+        return attackingFigures;
     }
 
     /// <summary>
@@ -189,15 +193,31 @@ public class BoardState
     }
 
     /// <summary>
-    /// Определяет, поставлен ли королю опрелеленного цвета шах.
+    /// Возвращает короля определенного цвета.
+    /// </summary>
+    public King FindKingByColor(Figure.FigureColor color)
+    {
+        List<Figure> ownFigures = GetFiguresByColor(color);
+        King king = (King)ownFigures.Find(figure => figure.GetType() == typeof(King));
+        return king;
+    }
+
+    /// <summary>
+    /// Возвращает список фигур атакующих короля определенного цвета.
     /// </summary>
     /// <param name="color">Королю какого цвета поствлен шах.</param>
     public bool DetectCheck(Figure.FigureColor color)
     {
-        Figure.FigureColor enemyColor = Figure.InvertColor(color);
-        List<Figure> ownFigures = GetFiguresByColor(color);
-        King king = (King)(from Figure figure in ownFigures where figure.GetType() == typeof(King) select figure).First();
-        return CellIsUnderAttack(king.Pos, enemyColor);
+        return GetFiguresAttackingFigure(FindKingByColor(color)).Count > 0;
+    }
+
+    /// <summary>
+    /// Возвращает список фигур атакующих заданного короля.
+    /// </summary>
+    /// <param name="color">Королю какого цвета поствлен шах.</param>
+    public bool DetectCheck(King king)
+    {
+        return GetFiguresAttackingFigure(king).Count > 0;
     }
 
     /// <summary>
@@ -215,7 +235,7 @@ public class BoardState
     public List<Figure> GetFiguresByColor(Figure.FigureColor color)
     {
         List<Figure> allFigures = GetFigures();
-        List<Figure> colorFigures = (from Figure figure in allFigures where figure.color == color select figure).ToList();
+        List<Figure> colorFigures = allFigures.FindAll(figure => figure.color == color);
         return colorFigures;
     }
 

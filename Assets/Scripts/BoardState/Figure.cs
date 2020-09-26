@@ -54,8 +54,8 @@ public class CastlingMove : FigureMove
     /// </summary>
     public Vector2Int rookTo;
 
-    public CastlingMove(Vector2Int from, Vector2Int to, Vector2Int rookFrom, Vector2Int rookTo, bool notMarkedAsIllegalRightAway)
-        : base(from, to, notMarkedAsIllegalRightAway)
+    public CastlingMove(Vector2Int from, Vector2Int to, Vector2Int rookFrom, Vector2Int rookTo, bool passedFirstCheck)
+        : base(from, to, passedFirstCheck)
     {
         this.rookFrom = rookFrom;
         this.rookTo = rookTo;

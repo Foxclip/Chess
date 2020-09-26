@@ -77,7 +77,7 @@ public class King : Figure
         // Клетки между ними не под боем
         bool kingCellsAreUnderAttack = boardState.AnyCellIsUnderAttack(kingPassesCells, InvertColor(color));
         // Король не под шахом
-        bool kingIsUnderAttack = boardState.DetectCheck(color);
+        bool kingIsUnderAttack = boardState.DetectCheck(this);
         if(figuresNotMoved && cellsBetweenAreFree)
         {
             int newX = side == CastlingSide.queenside ? 2 : 6;
@@ -87,7 +87,7 @@ public class King : Figure
                     to: new Vector2Int(newX, y),
                     rookFrom: rookPos,
                     rookTo: rookNewPos,
-                    notMarkedAsIllegalRightAway: !kingCellsAreUnderAttack && !kingIsUnderAttack
+                    passedFirstCheck: !kingCellsAreUnderAttack && !kingIsUnderAttack
                 )
             );
         }
