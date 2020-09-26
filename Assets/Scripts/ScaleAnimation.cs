@@ -13,7 +13,7 @@ public class ScaleAnimation : MonoBehaviour
     /// </summary>
     public float power = 0.2f;
     /// <summary>
-    /// Время в секундах, оставшееся до конца анимации
+    /// Время в секундах, прошедшее с начала анимации
     /// </summary>
     private float timePassed = 0.0f;
     /// <summary>
@@ -29,7 +29,7 @@ public class ScaleAnimation : MonoBehaviour
     /// </summary>
     private Vector3 savedSpriteScale;
     /// <summary>
-    /// Авктивна анимация или нет.
+    /// Активна анимация или нет.
     /// </summary>
     private bool active = false;
     /// <summary>

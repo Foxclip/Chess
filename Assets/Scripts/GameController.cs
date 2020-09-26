@@ -50,7 +50,7 @@ public class GameController : MonoBehaviour
         string figureName = $"{figureColor}_{figureType}";
 
         // Создаем объект
-        GameObject gameObject = Instantiate(Resources.Load(figureName)) as GameObject;
+        GameObject gameObject = Instantiate(Resources.Load($"Pieces/{figureName}")) as GameObject;
         gameObject.transform.position = new Vector3(figure.x, figure.y);
         gameObject.transform.parent = GameObject.Find("pieces").transform;
 
@@ -128,11 +128,12 @@ public class GameController : MonoBehaviour
         boardState.UpdateLegalMoves();
         Debug.Log($"{boardState.turnColor} has {boardState.GetLegalMoves().Count} moves");
 
-        // Шах и мат
+        // Шах
         if(boardState.DetectCheck(boardState.turnColor))
         {
             Debug.Log($"CHECK TO {boardState.turnColor} KING");
         }
+        // Мат
         if(boardState.DetectMate())
         {
             Debug.Log($"MATE TO {boardState.turnColor} KING");
