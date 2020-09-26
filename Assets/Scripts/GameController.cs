@@ -174,7 +174,26 @@ public class GameController : MonoBehaviour
         // Запускаем анимацию
         MoveAnimation moveAnimation = piece.GetComponent<MoveAnimation>();
         currentMove = move;
-        moveAnimation.StartAnimation(new Vector3(move.from.x, move.from.y), new Vector3(move.to.x, move.to.y), EndMove);
+        moveAnimation.StartAnimation(
+            beginPos: new Vector3(move.from.x, move.from.y),
+            endPos: new Vector3(move.to.x, move.to.y),
+            finishedCallback: EndMove
+        );
+
+        // При рокировке запускаем анимацию для ладьи
+        if(move.GetType() == typeof(CastlingMove))
+        {
+            // Находим GameObject ладьи
+            CastlingMove castlingMove = (CastlingMove)move;
+            GameObject rook = FindGameObjectByPos(castlingMove.rookFrom);
+            // Запускаем анимацию
+            MoveAnimation rookMoveAnimation = rook.GetComponent<MoveAnimation>();
+            rookMoveAnimation.StartAnimation(
+                beginPos: new Vector3(castlingMove.rookFrom.x, castlingMove.rookFrom.y),
+                endPos: new Vector3(castlingMove.rookTo.x, castlingMove.rookTo.y),
+                finishedCallback: null
+            );
+        }
     }
 
     /// <summary>
