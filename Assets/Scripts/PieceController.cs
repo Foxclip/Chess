@@ -43,15 +43,6 @@ public class PieceController : MonoBehaviour
     }
 
     /// <summary>
-    /// Вызывется фигурой, находящейся на доске BoardState если фигура была передвинута.
-    /// </summary>
-    public void MovedCallback(Vector2Int newPos)
-    {
-        Debug.Log($"Moved callback: {boardStateFigure.GetType()} from {new Vector2Int((int)transform.position.x, (int)transform.position.y)} to {newPos}");
-        transform.position = new Vector3(newPos.x, newPos.y);
-    }
-
-    /// <summary>
     /// Вызывется фигурой, находящейся на доске BoardState если фигура была удалена (например, ее взяли).
     /// </summary>
     public void DeletedCallback()

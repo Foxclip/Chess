@@ -56,6 +56,9 @@ TagManager:
   - name: LegalMove
     uniqueID: 2532780369
     locked: 0
+  - name: CurrentPiece
+    uniqueID: 624534263
+    locked: 0
   - name: Canvas
     uniqueID: 38822019
     locked: 0
