@@ -12,7 +12,8 @@ public class PieceController : MonoBehaviour
     [HideInInspector]
     public Figure boardStateFigure;
 
-    private static GameController gameController;
+    private GameController gameController;
+    private ImplodeAnimation implodeAnimation;
     /// <summary>
     /// Метки ходов.
     /// </summary>
@@ -25,6 +26,7 @@ public class PieceController : MonoBehaviour
     void Start()
     {
         gameController = GameObject.Find("GameController").GetComponent<GameController>();
+        implodeAnimation = GetComponent<ImplodeAnimation>();
     }
 
     /// <summary>
@@ -47,7 +49,11 @@ public class PieceController : MonoBehaviour
     /// </summary>
     public void DeletedCallback()
     {
-        Destroy(gameObject);
+        // Перемещаем спрайт на слой ниже
+        SpriteRenderer spriteRenderer = transform.GetChild(0).GetComponent<SpriteRenderer>();
+        spriteRenderer.sortingLayerName = "ImplodingPieces";
+        // Запускаем анимацию удаления
+        implodeAnimation.StartAnimation(1.0f, 0.0f);
     }
 
     public void ObjectClicked()

@@ -35,7 +35,7 @@ public class GameController : MonoBehaviour
     /// <summary>
     /// GameObject фигуры, который перемещается.
     /// </summary>
-    private GameObject currentMovingPiece;
+    private Transform currentMovingPiece;
 
     /// <summary>
     /// Состояние после завершения партии.
@@ -129,10 +129,10 @@ public class GameController : MonoBehaviour
     }
 
     /// <summary>
-    /// Находит GameObject фигуры по ее позиции на доске
+    /// Находит объект фигуры по ее позиции на доске
     /// </summary>
     /// <param name="pos">Позиция фигуры на BoardState</param>
-    private GameObject FindGameObjectByPos(Vector2Int pos)
+    private Transform FindTransformByPos(Vector2Int pos)
     {
         Transform pieces = GameObject.Find("pieces").transform;
         List<Transform> foundPieces = new List<Transform>();
@@ -151,7 +151,7 @@ public class GameController : MonoBehaviour
         {
             throw new InvalidOperationException($"Найдено {foundPieces.Count} фигуры в позиции {pos}");
         }
-        return foundPieces[0].gameObject;
+        return foundPieces[0];
     }
 
     /// <summary>
@@ -164,10 +164,10 @@ public class GameController : MonoBehaviour
         PieceController.ClearSelection();
 
         // Находим GameObject фигуры
-        GameObject piece = FindGameObjectByPos(move.from);
+        Transform piece = FindTransformByPos(move.from);
 
         // Перемещаем спрайт на слой выше
-        SpriteRenderer spriteRenderer = piece.GetComponent<SpriteRenderer>();
+        SpriteRenderer spriteRenderer = piece.GetChild(0).GetComponent<SpriteRenderer>();
         spriteRenderer.sortingLayerName = "CurrentPiece";
         currentMovingPiece = piece;
 
@@ -185,7 +185,7 @@ public class GameController : MonoBehaviour
         {
             // Находим GameObject ладьи
             CastlingMove castlingMove = (CastlingMove)move;
-            GameObject rook = FindGameObjectByPos(castlingMove.rookFrom);
+            Transform rook = FindTransformByPos(castlingMove.rookFrom);
             // Запускаем анимацию
             MoveAnimation rookMoveAnimation = rook.GetComponent<MoveAnimation>();
             rookMoveAnimation.StartAnimation(
@@ -205,7 +205,7 @@ public class GameController : MonoBehaviour
         boardState.ExecuteMove(currentMove);
 
         // Перемещаем спрайт на слой ниже
-        SpriteRenderer spriteRenderer = currentMovingPiece.GetComponent<SpriteRenderer>();
+        SpriteRenderer spriteRenderer = currentMovingPiece.GetChild(0).GetComponent<SpriteRenderer>();
         spriteRenderer.sortingLayerName = "Pieces";
         currentMovingPiece = null;
 

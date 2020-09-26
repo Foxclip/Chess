@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ScaleAnimation : ScaleAnimationBase
+public class ImplodeAnimation : ScaleAnimationBase
 {
     /// <summary>
     /// Длительность анимации
@@ -15,13 +15,14 @@ public class ScaleAnimation : ScaleAnimationBase
 
     public void FixedUpdate()
     {
-        if(active) 
+        if(active)
         {
             timePassed += Time.fixedDeltaTime;
             if(timePassed > duration)
             {
                 timePassed = duration;
                 active = false;
+                Destroy(gameObject);
             }
             float completionPercentage = timePassed / duration;
             float nonlinear = Mathf.Pow(completionPercentage, power);

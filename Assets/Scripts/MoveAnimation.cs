@@ -34,7 +34,7 @@ public class MoveAnimation : MonoBehaviour
     /// </summary>
     private Action finishedCallback;
 
-    void FixedUpdate()
+    public void FixedUpdate()
     {
         if(active)
         {
