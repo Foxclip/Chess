@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: -3644984953275632463}
   - component: {fileID: 997003391742081787}
   - component: {fileID: -1314912148514902499}
-  - component: {fileID: -1451498775538420908}
+  - component: {fileID: 1943194511441341708}
   m_Layer: 0
   m_Name: white_king
   m_TagString: king
@@ -74,7 +74,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   duration: 0.2
   power: 0.3
---- !u!114 &-1451498775538420908
+--- !u!114 &1943194511441341708
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -83,11 +83,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 997003391742081791}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 199c9fc07f4444947b07de4e1c95d599, type: 3}
+  m_Script: {fileID: 11500000, guid: ad2e68fd3d6fae8409ccb24be72c8947, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  duration: 0.1
-  power: 5
+  maxDistance: 0.1
+  duration: 1
+  power: 1
 --- !u!1 &3727331789186819404
 GameObject:
   m_ObjectHideFlags: 0

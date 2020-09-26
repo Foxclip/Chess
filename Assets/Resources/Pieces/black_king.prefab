@@ -94,7 +94,7 @@ GameObject:
   - component: {fileID: -6522249678822201150}
   - component: {fileID: 6729940492684540979}
   - component: {fileID: 5710242071702749484}
-  - component: {fileID: -7908137315160119652}
+  - component: {fileID: 3065879046937466283}
   m_Layer: 0
   m_Name: black_king
   m_TagString: king
@@ -156,7 +156,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   duration: 0.2
   power: 0.3
---- !u!114 &-7908137315160119652
+--- !u!114 &3065879046937466283
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -165,8 +165,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 6729940492684540983}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 199c9fc07f4444947b07de4e1c95d599, type: 3}
+  m_Script: {fileID: 11500000, guid: ad2e68fd3d6fae8409ccb24be72c8947, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  duration: 0.1
-  power: 5
+  maxDistance: 0.1
+  duration: 1
+  power: 1

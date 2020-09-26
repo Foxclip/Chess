@@ -246,16 +246,18 @@ public class GameController : MonoBehaviour
         {
             Debug.Log($"CHECK TO {boardState.turnColor} KING");
             // Рисуем красные линии
+            ShakeAnimation shakeAnimation = FindTransformByPos(king.Pos).GetComponent<ShakeAnimation>();
             foreach(Figure figure in attackingFigures)
             {
                 // Добавляем объект
                 GameObject newRedLine = Instantiate(redLine);
                 redLines.Add(newRedLine);
                 // Запускаем анимацию
-                RedLineController redLineController = newRedLine.GetComponent<RedLineController>();
-                redLineController.StartAnimation(
-                    new Vector3(figure.Pos.x, figure.Pos.y),
-                    new Vector3(king.Pos.x, king.Pos.y)
+                RedLineAnimation redLineAnimation = newRedLine.GetComponent<RedLineAnimation>();
+                redLineAnimation.StartAnimation(
+                    beginPos: new Vector3(figure.Pos.x, figure.Pos.y),
+                    endPos: new Vector3(king.Pos.x, king.Pos.y),
+                    finishedCallback: shakeAnimation.StartAnimation
                 );
             }
         }
