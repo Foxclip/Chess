@@ -21,31 +21,15 @@ public class LegalMoveController : MonoBehaviour
     public FigureMove move;
 
     private GameController gameController;
-    private PieceController pieceController;
-    private MoveAnimation moveAnimation;
 
     void Start()
     {
         gameController = GameObject.Find("GameController").GetComponent<GameController>();
-        pieceController = piece.GetComponent<PieceController>();
-        moveAnimation = piece.GetComponent<MoveAnimation>();
-    }
-
-    /// <summary>
-    /// Вызывется после завершения анимации перемещения
-    /// </summary>
-    public void AfterAnimation()
-    {
-        pieceController.boardStateFigure.ExecuteMove(move);
-        gameController.Turn();
     }
 
     public void ObjectClicked()
     {
-        // Убираем выделение
-        PieceController.ClearSelection();
-        // Запуск анимации
-        moveAnimation.StartAnimation(piece.position, transform.position, AfterAnimation);
+        gameController.BeginMove(move);
     }
 
 }

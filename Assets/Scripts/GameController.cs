@@ -28,6 +28,11 @@ public class GameController : MonoBehaviour
     public BoardState boardState;
 
     /// <summary>
+    /// Ход фигуры во время анимации перемещения
+    /// </summary>
+    private FigureMove currentMove;
+
+    /// <summary>
     /// Состояние после завершения партии.
     /// </summary>
     public bool gameEnded = false;
@@ -57,7 +62,6 @@ public class GameController : MonoBehaviour
         // Привязываем объект к фигуре BoardState
         PieceController pieceController = gameObject.GetComponent<PieceController>();
         pieceController.boardStateFigure = figure;
-        figure.movedCallback = pieceController.MovedCallback;
         figure.deletedCallback = pieceController.DeletedCallback;
     }
 
@@ -119,10 +123,54 @@ public class GameController : MonoBehaviour
         LoadGameObject(figure);
     }
 
-    public void Turn()
+    /// <summary>
+    /// Находит GameObject фигуры по ее позиции на доске
+    /// </summary>
+    /// <param name="pos">Позиция фигуры на BoardState</param>
+    private GameObject FindGameObjectByPos(Vector2Int pos)
+    {
+        Transform pieces = GameObject.Find("pieces").transform;
+        List<Transform> foundPieces = new List<Transform>();
+        foreach(Transform piece in pieces)
+        {
+            if(piece.position.x == pos.x && piece.position.y == pos.y)
+            {
+                foundPieces.Add(piece);
+            }
+        }
+        if(foundPieces.Count == 0)
+        {
+            throw new InvalidOperationException($"Не найден GameObject фигуры в позиции {pos}");
+        }
+        if(foundPieces.Count > 1)
+        {
+            throw new InvalidOperationException($"Найдено {foundPieces.Count} фигуры в позиции {pos}");
+        }
+        return foundPieces[0].gameObject;
+    }
+
+    /// <summary>
+    /// Запуск анимации перемещения фигуры. Ход фигуры на BoardState выполняется после завершения анимации.
+    /// </summary>
+    /// <param name="move"></param>
+    public void BeginMove(FigureMove move)
     {
         // Убираем выделение
         PieceController.ClearSelection();
+        // Запускаем анимацию
+        GameObject piece = FindGameObjectByPos(move.from);
+        MoveAnimation moveAnimation = piece.GetComponent<MoveAnimation>();
+        currentMove = move;
+        moveAnimation.StartAnimation(new Vector3(move.from.x, move.from.y), new Vector3(move.to.x, move.to.y), EndMove);
+    }
+
+    /// <summary>
+    /// Вызывется после завершения анимации перемещения фигуры.
+    /// </summary>
+    public void EndMove()
+    {
+        // Делаем ход на BoardState
+        boardState.ExecuteMove(currentMove);
 
         // Обновляем список разрешенных ходов
         boardState.UpdateLegalMoves();
@@ -147,8 +195,8 @@ public class GameController : MonoBehaviour
         // Ход ИИ
         if(boardState.turnColor == Figure.FigureColor.black)
         {
-            AiModule.AiMove(boardState);
-            Turn();
+            FigureMove aiMove = AiModule.AiMove(boardState);
+            BeginMove(aiMove);
         }
     }
 }

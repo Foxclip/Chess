@@ -9,7 +9,7 @@ public class AiModule
     /// <summary>
     /// Совершить ход.
     /// </summary>
-    public static void AiMove(BoardState boardState)
+    public static FigureMove AiMove(BoardState boardState)
     {
         if(boardState.DetectMate())
         {
@@ -18,7 +18,7 @@ public class AiModule
         // Случайный ход
         List<FigureMove> availableMoves = boardState.GetLegalMoves();
         FigureMove randomMove = availableMoves[random.Next(availableMoves.Count)];
-        boardState.ExecuteMove(randomMove);
+        return randomMove;
     }
 
 }

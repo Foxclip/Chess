@@ -127,14 +127,6 @@ public abstract class Figure
         white,
         black
     }
-    /// <summary>
-    /// Тип для deletedCallback
-    /// </summary>
-    public delegate void DeletedCallbackDelegate();
-    /// <summary>
-    /// Тип для movedCallback
-    /// </summary>
-    public delegate void MovedCallbackDelegate(Vector2Int newPos);
 
     /// <summary>
     /// Позиция x фигуры на доске
@@ -159,11 +151,7 @@ public abstract class Figure
     /// <summary>
     /// Вызывется при удалении фигуры с доски (например, ее взяли)
     /// </summary>
-    public DeletedCallbackDelegate deletedCallback;
-    /// <summary>
-    /// Вызывается когда фигура была передвинута
-    /// </summary>
-    public MovedCallbackDelegate movedCallback;
+    public Action deletedCallback;
     /// <summary>
     /// Цвет фигуры (белый или черный)
     /// </summary>
@@ -265,7 +253,6 @@ public abstract class Figure
         // Изменяем параметры фигуры
         Vector2Int oldPos = figure.Pos;
         figure.Pos = newPos;
-        figure.movedCallback?.Invoke(newPos);
         figure.moveCount++;
     }
 
