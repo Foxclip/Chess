@@ -29,6 +29,12 @@ public class LegalMoveController : MonoBehaviour
 
     public void ObjectClicked()
     {
+        // Если интерфейс заблокирован, то выбирать ходить нельзя
+        if(gameController.interfaceLocked)
+        {
+            return;
+        }
+
         gameController.BeginMove(move);
     }
 

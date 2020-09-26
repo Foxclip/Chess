@@ -58,6 +58,12 @@ public class PieceController : MonoBehaviour
 
     public void ObjectClicked()
     {
+        // Если интерфейс заблокирован, то выбирать фигуры нельзя
+        if(gameController.interfaceLocked)
+        {
+            return;
+        }
+
         // Нельзя ходить после конца партии
         if(gameController.gameEnded)
         {

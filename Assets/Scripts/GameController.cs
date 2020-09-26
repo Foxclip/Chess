@@ -49,6 +49,11 @@ public class GameController : MonoBehaviour
     public const string savedStateFileName = "boardState.xml";
 
     /// <summary>
+    /// Блокировка интефейса на время показа анимации
+    /// </summary>
+    public bool interfaceLocked = false;
+
+    /// <summary>
     /// Загружает префаб фигуры и привязывает его к фигуре BoardState.
     /// </summary>
     /// <param name="figure">Фигура BoardState.</param>
@@ -160,6 +165,9 @@ public class GameController : MonoBehaviour
     /// <param name="move"></param>
     public void BeginMove(FigureMove move)
     {
+        // Блокируем интерфейс
+        interfaceLocked = true;
+
         // Убираем выделение
         PieceController.ClearSelection();
 
@@ -201,6 +209,9 @@ public class GameController : MonoBehaviour
     /// </summary>
     public void EndMove()
     {
+        // Снимаем блокировку интерфейса
+        interfaceLocked = false;
+
         // Делаем ход на BoardState
         boardState.ExecuteMove(currentMove);
 
