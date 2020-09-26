@@ -72,7 +72,9 @@ public class Pawn : Figure
         base.ExecuteMove(move);
 
         // Превращение в ферзя
-        if(move.to.y == 7)
+        bool whitePawn = (color == FigureColor.white) && (move.to.y == 7);
+        bool blackPawn = (color == FigureColor.black) && (move.to.y == 0);
+        if(whitePawn || blackPawn)
         {
             // Удаляем пешку
             Delete();
