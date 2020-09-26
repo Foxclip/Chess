@@ -33,6 +33,11 @@ public class GameController : MonoBehaviour
     private FigureMove currentMove;
 
     /// <summary>
+    /// GameObject фигуры, который перемещается.
+    /// </summary>
+    private GameObject currentMovingPiece;
+
+    /// <summary>
     /// Состояние после завершения партии.
     /// </summary>
     public bool gameEnded = false;
@@ -109,7 +114,7 @@ public class GameController : MonoBehaviour
         {
             if(Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out RaycastHit hit))
             {
-                hit.collider.gameObject.BroadcastMessage("ObjectClicked");
+                hit.collider.gameObject.BroadcastMessage("ObjectClicked", SendMessageOptions.DontRequireReceiver);
             }
         }
     }
@@ -157,8 +162,16 @@ public class GameController : MonoBehaviour
     {
         // Убираем выделение
         PieceController.ClearSelection();
-        // Запускаем анимацию
+
+        // Находим GameObject фигуры
         GameObject piece = FindGameObjectByPos(move.from);
+
+        // Перемещаем спрайт на слой выше
+        SpriteRenderer spriteRenderer = piece.GetComponent<SpriteRenderer>();
+        spriteRenderer.sortingLayerName = "CurrentPiece";
+        currentMovingPiece = piece;
+
+        // Запускаем анимацию
         MoveAnimation moveAnimation = piece.GetComponent<MoveAnimation>();
         currentMove = move;
         moveAnimation.StartAnimation(new Vector3(move.from.x, move.from.y), new Vector3(move.to.x, move.to.y), EndMove);
@@ -171,6 +184,11 @@ public class GameController : MonoBehaviour
     {
         // Делаем ход на BoardState
         boardState.ExecuteMove(currentMove);
+
+        // Перемещаем спрайт на слой ниже
+        SpriteRenderer spriteRenderer = currentMovingPiece.GetComponent<SpriteRenderer>();
+        spriteRenderer.sortingLayerName = "Pieces";
+        currentMovingPiece = null;
 
         // Обновляем список разрешенных ходов
         boardState.UpdateLegalMoves();
