@@ -284,10 +284,11 @@ public class BoardState
             // Двигаем фигуру
             Figure figure = virtualBoard.GetFigureAtCell(ownMove.from);
             figure.ExecuteMove(ownMove);
-            // Если ход не приводит к шаху, то он разрешен
+            // Записываем всю информацию в FigureMove
             List<Figure> attackingFigures = virtualBoard.GetFiguresAttackingFigure(virtualBoard.FindKingByColor(turnColor));
             ownMove.attackingFigures = attackingFigures;
             ownMove.kingPos = virtualBoard.FindKingByColor(turnColor).Pos;
+            ownMove.boardStateAfterMove = virtualBoard;
             moveList.Add(ownMove);
         }
     }

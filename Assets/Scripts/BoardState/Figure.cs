@@ -28,6 +28,10 @@ public class FigureMove: IEquatable<FigureMove>
     /// Позиция короля после хода.
     /// </summary>
     public Vector2Int kingPos;
+    /// <summary>
+    /// Состояние доски после хода
+    /// </summary>
+    public BoardState boardStateAfterMove;
 
     public FigureMove(Vector2Int from, Vector2Int to, bool passedFirstCheck)
     {
