@@ -20,6 +20,14 @@ public class FigureMove: IEquatable<FigureMove>
     /// Некоторые ходы могут отмечаться как запрещенные сразу в методе Move
     /// </summary>
     public bool passedFirstCheck;
+    /// <summary>
+    /// Атакующие фигуры.
+    /// </summary>
+    public List<Figure> attackingFigures;
+    /// <summary>
+    /// Позиция короля после хода.
+    /// </summary>
+    public Vector2Int kingPos;
 
     public FigureMove(Vector2Int from, Vector2Int to, bool passedFirstCheck)
     {
@@ -206,13 +214,12 @@ public abstract class Figure
     }
 
     /// <summary>
-    /// Получает все разрешенные ходы данной фигуры. Не включает ходы приводящие к шаху.
+    /// Возвращает список ходов с атакующими фигурами.
     /// </summary>
-    /// <returns>Список разрешенных ходов данной фигуры.</returns>
-    public List<FigureMove> GetLegalMoves()
+    /// <returns></returns>
+    public List<FigureMove> GetAllMarkedMoves()
     {
-        List<FigureMove> moves = boardState.GetLegalMoves().FindAll((move) => move.from == Pos);
-        return moves;
+        return boardState.moveList.FindAll(move => move.from == Pos);
     }
 
     /// <summary>

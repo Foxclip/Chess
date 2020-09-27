@@ -16,7 +16,7 @@ public class AiModule
             throw new InvalidOperationException("Невозможно сделать ход: поставлен мат");
         }
         // Случайный ход
-        List<FigureMove> availableMoves = boardState.GetLegalMoves();
+        List<FigureMove> availableMoves = boardState.moveList.FindAll(move => move.attackingFigures.Count == 0);
         FigureMove randomMove = availableMoves[random.Next(availableMoves.Count)];
         return randomMove;
     }

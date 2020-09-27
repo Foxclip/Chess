@@ -29,6 +29,10 @@ public class ShakeAnimation : MonoBehaviour
     /// Начальная позиция объекта
     /// </summary>
     private Vector3 initialPosition;
+    /// <summary>
+    /// Спрайт, который будет анимирован
+    /// </summary>
+    private Transform spriteTransform;
 
     public void FixedUpdate()
     {
@@ -44,7 +48,7 @@ public class ShakeAnimation : MonoBehaviour
             float completionPercentage = timePassed / duration;
             float nonlinear = Mathf.Pow(completionPercentage, power);
             Vector3 diff = UnityEngine.Random.insideUnitCircle * maxDistance * (1 - nonlinear);
-            transform.position = initialPosition + diff;
+            spriteTransform.position = initialPosition + diff;
         }
     }
 
@@ -55,6 +59,7 @@ public class ShakeAnimation : MonoBehaviour
     {
         timePassed = 0.0f;
         active = true;
+        spriteTransform = transform.GetChild(0);
         // Сохраняем пначальную позицию
         initialPosition = transform.position;
     }

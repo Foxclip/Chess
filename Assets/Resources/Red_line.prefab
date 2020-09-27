@@ -108,7 +108,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5e066aeb2c44d8c46bb986a1487bd9ce, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  drawDuration: 1
+  drawDuration: 0.1
   fadeoutDuration: 1
-  power: 5
+  power: 2
   fadeoutPower: 1

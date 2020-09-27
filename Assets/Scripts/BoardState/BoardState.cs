@@ -27,9 +27,9 @@ public class BoardState
     public Figure.FigureColor turnColor;
 
     /// <summary>
-    /// Временный список разрешенных ходов цвета, который сейчас ходит.
+    /// Временный список всех ходов цвета, который сейчас ходит.
     /// </summary>
-    private List<FigureMove> legalMoves = new List<FigureMove>();
+    public List<FigureMove> moveList = new List<FigureMove>();
 
     /// <summary>
     /// Вызывается при создании фигуры.
@@ -173,7 +173,7 @@ public class BoardState
     /// <summary>
     /// Возвращает список фигур атакующих фигуру.
     /// </summary>
-    /// <param name="color">Фигура, которую атакуют.</param>
+    /// <param name="figure">Фигура, которую атакуют.</param>
     public List<Figure> GetFiguresAttackingFigure(Figure figure)
     {
         Figure.FigureColor enemyColor = figure.GetEnemyColor();
@@ -226,7 +226,7 @@ public class BoardState
     public bool DetectMate()
     {
         // Определение мата
-        return GetLegalMoves().Count == 0;
+        return moveList.FindAll(move => move.attackingFigures.Count == 0).Count == 0;
     }
 
     /// <summary>
@@ -264,20 +264,11 @@ public class BoardState
     }
 
     /// <summary>
-    /// Получает список разрешенных (не приводящих к шаху) ходов фигур того цвета, который сейчас ходит.
-    /// </summary>
-    public List<FigureMove> GetLegalMoves()
-    {
-        // Список обновляется после каждого хода в методе UpdateLegalMoves
-        return legalMoves;
-    }
-
-    /// <summary>
     /// Обновляет список разрешенных (не приводящих к шаху) ходов фигур того цвета, который сейчас ходит.
     /// </summary>
     public void UpdateLegalMoves()
     {
-        legalMoves.Clear();
+        moveList.Clear();
         // Получаем список возможных ходов
         List<FigureMove> ownMoves = GetMovesByColor(turnColor, special: true);
         // Пытаемся сделать ход на виртуальной доске
@@ -294,10 +285,10 @@ public class BoardState
             Figure figure = virtualBoard.GetFigureAtCell(ownMove.from);
             figure.ExecuteMove(ownMove);
             // Если ход не приводит к шаху, то он разрешен
-            if(!virtualBoard.DetectCheck(turnColor))
-            {
-                legalMoves.Add(ownMove);
-            }
+            List<Figure> attackingFigures = virtualBoard.GetFiguresAttackingFigure(virtualBoard.FindKingByColor(turnColor));
+            ownMove.attackingFigures = attackingFigures;
+            ownMove.kingPos = virtualBoard.FindKingByColor(turnColor).Pos;
+            moveList.Add(ownMove);
         }
     }
 
@@ -342,7 +333,7 @@ public class BoardState
         fs.Close();
 
         // Временный список legalMoves не сохраняется в файл, поэтому его необходимо создать
-        deserializedObject.legalMoves = new List<FigureMove>();
+        deserializedObject.moveList = new List<FigureMove>();
         deserializedObject.UpdateLegalMoves();
         // Коллбек необходимо привязать заново
         deserializedObject.figureCreatedCallback = figureCreatedCallback;

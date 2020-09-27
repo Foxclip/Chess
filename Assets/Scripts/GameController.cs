@@ -145,7 +145,7 @@ public class GameController : MonoBehaviour
     /// Находит объект фигуры по ее позиции на доске
     /// </summary>
     /// <param name="pos">Позиция фигуры на BoardState</param>
-    private Transform FindTransformByPos(Vector2Int pos)
+    public Transform FindTransformByPos(Vector2Int pos)
     {
         Transform pieces = GameObject.Find("pieces").transform;
         List<Transform> foundPieces = new List<Transform>();
@@ -237,7 +237,7 @@ public class GameController : MonoBehaviour
 
         // Обновляем список разрешенных ходов
         boardState.UpdateLegalMoves();
-        Debug.Log($"{boardState.turnColor} has {boardState.GetLegalMoves().Count} moves");
+        Debug.Log($"{boardState.turnColor} has {boardState.moveList.FindAll(move => move.attackingFigures.Count == 0).Count} moves");
 
         // Шах
         King king = boardState.FindKingByColor(boardState.turnColor);

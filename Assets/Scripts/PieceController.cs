@@ -90,9 +90,9 @@ public class PieceController : MonoBehaviour
         selectedPiece = gameObject;
 
         // Определяем клеки в которые можно ходить и в которые нельзя
-        List<FigureMove> allMoves = boardStateFigure.GetAllMoves(special: true);
-        List<FigureMove> legalMoves = boardStateFigure.GetLegalMoves();
-        List<FigureMove> illegalMoves = allMoves.Except<FigureMove>(legalMoves).ToList();
+        List<FigureMove> allMArkedMoves = boardStateFigure.GetAllMarkedMoves();
+        List<FigureMove> legalMoves = allMArkedMoves.FindAll(move => move.attackingFigures.Count == 0);
+        List<FigureMove> illegalMoves = allMArkedMoves.Except(legalMoves).ToList();
         // Ставим метки на клетки в которые можно ходить
         foreach(FigureMove move in legalMoves)
         {
@@ -113,6 +113,10 @@ public class PieceController : MonoBehaviour
         {
             // Создаем метку
             GameObject newObject = Instantiate(gameController.illegalMoveCell, new Vector3(move.to.x, move.to.y, -1.0f), Quaternion.identity);
+            // Привязываем объект и ход на BoardState
+            IllegalMoveController illegalMoveController = newObject.GetComponent<IllegalMoveController>();
+            illegalMoveController.piece = transform;
+            illegalMoveController.move = move;
             // Запускаем анимацию появления
             ScaleAnimation scaleAnimation = newObject.GetComponent<ScaleAnimation>();
             scaleAnimation.StartAnimation(0.0f, 1.0f);

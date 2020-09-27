@@ -13,6 +13,7 @@ public class LegalMoveController : MonoBehaviour
     /// <summary>
     /// К какому Unity объекту относится метка.
     /// </summary>
+    [HideInInspector]
     public Transform piece;
     /// <summary>
     /// Привязанный ход на BoardState

@@ -60,13 +60,14 @@ public class RedLineAnimation : MonoBehaviour
             {
                 fadeoutPhase = true;
                 timePassed = drawDuration;
-                finishedCallback();
+                finishedCallback?.Invoke();
             }
             // Конец анимации
             if(fadeoutPhase && (timePassed > drawDuration + fadeoutDuration))
             {
                 timePassed = drawDuration + fadeoutDuration;
                 active = false;
+                Destroy(gameObject);
             }
             // Фаза перемещения
             if(!fadeoutPhase)
@@ -99,7 +100,7 @@ public class RedLineAnimation : MonoBehaviour
     /// </summary>
     /// <param name="beginPos">Начало линии.</param>
     /// <param name="endPos">Конец линии.</param>
-    public void StartAnimation(Vector3 beginPos, Vector3 endPos, Action finishedCallback)
+    public void StartAnimation(Vector3 beginPos, Vector3 endPos, Action finishedCallback = null)
     {
         this.beginPos = beginPos;
         this.endPos = endPos;
