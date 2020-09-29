@@ -289,6 +289,7 @@ public class BoardState
             ownMove.attackingFigures = attackingFigures;
             ownMove.kingPos = virtualBoard.FindKingByColor(turnColor).Pos;
             ownMove.boardStateAfterMove = virtualBoard;
+            ownMove.color = turnColor;
             moveList.Add(ownMove);
         }
     }

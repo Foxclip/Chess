@@ -32,6 +32,10 @@ public class FigureMove: IEquatable<FigureMove>
     /// Состояние доски после хода
     /// </summary>
     public BoardState boardStateAfterMove;
+    /// <summary>
+    /// Цвет фигуры которая ходит
+    /// </summary>
+    public Figure.FigureColor color;
 
     public FigureMove(Vector2Int from, Vector2Int to, bool passedFirstCheck)
     {

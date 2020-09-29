@@ -8,6 +8,7 @@ using UnityEngine;
 public class AiModule
 {
     private static readonly System.Random random = new System.Random();
+    private static int moveCheckedCounter = 0;
 
     /// <summary>
     /// Совершить ход.
@@ -18,7 +19,7 @@ public class AiModule
         {
             throw new InvalidOperationException("Невозможно сделать ход: поставлен мат");
         }
-        return Minimax(boardState, 0);
+        return Minimax(boardState, 2);
     }
 
     /// <summary>
@@ -71,23 +72,47 @@ public class AiModule
     /// <summary>
     /// Рекурсивная часть функции Minimax.
     /// </summary>
-    private static double _Minimax(FigureMove move, int currentDepth, int maxDepth)
+    private static double Alphabeta(FigureMove move, int currentDepth, int maxDepth, double alpha, double beta)
     {
-        if(currentDepth < maxDepth)
+        moveCheckedCounter++;
+
+        // Если достигли конца дерева, получаем оценку доски
+        if(currentDepth >= maxDepth)
         {
-            // Обновляем список ходов
-            move.boardStateAfterMove.UpdateLegalMoves();
-            // Получаем оценку каждого хода
-            List<FigureMove> moves = move.boardStateAfterMove.GetLegalMoves();
-            List<double> values = new List<double>();
-            moves.ForEach(mv => values.Add(_Minimax(mv, currentDepth + 1, maxDepth)));
-            // Возвращаем минимум или максимум в зависимости от того чей ход
-            return move.boardStateAfterMove.turnColor == Figure.FigureColor.white ? values.Min() : values.Max();
+            return EvaluateBoard(move.boardStateAfterMove);
+        }
+
+        // Обновляем список ходов
+        move.boardStateAfterMove.UpdateLegalMoves();
+        // Получаем оценку каждого хода
+        List<FigureMove> moves = move.boardStateAfterMove.GetLegalMoves();
+        if(move.color == Figure.FigureColor.white)
+        {
+            double value = double.NegativeInfinity;
+            foreach(FigureMove nextMove in moves)
+            {
+                value = Math.Max(value, Alphabeta(nextMove, currentDepth + 1, maxDepth, alpha, beta));
+                alpha = Math.Max(alpha, value);
+                if(alpha >= beta)
+                {
+                    break;
+                }
+            }
+            return value;
         }
         else
         {
-            // Если достигли конца дерева, получаем оценку доски
-            return EvaluateBoard(move.boardStateAfterMove);
+            double value = double.PositiveInfinity;
+            foreach(FigureMove nextMove in moves)
+            {
+                value = Math.Min(value, Alphabeta(nextMove, currentDepth + 1, maxDepth, alpha, beta));
+                beta = Math.Min(beta, value);
+                if(beta <= alpha)
+                {
+                    break;
+                }
+            }
+            return value;
         }
     }
 
@@ -99,7 +124,9 @@ public class AiModule
         // Список разрешенных ходов
         List<FigureMove> availableMoves = boardState.GetLegalMoves();
         // Оценки ходов
-        List<double> moveValues = availableMoves.Select(move => _Minimax(move, 0, maxDepth)).ToList();
+        moveCheckedCounter = 0;
+        List<double> moveValues = availableMoves.Select(move => Alphabeta(move, 0, maxDepth, double.PositiveInfinity, double.NegativeInfinity)).ToList();
+        UnityEngine.Debug.Log($"{moveCheckedCounter} moves checked");
         // Значение лучшей оценки
         double bestMoveValue = boardState.turnColor == Figure.FigureColor.white ? moveValues.Max() : moveValues.Min();
         // Выбираем ходы с лучшей оценкой
