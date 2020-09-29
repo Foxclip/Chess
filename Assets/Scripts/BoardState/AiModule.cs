@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using UnityEngine;
 
 public class AiModule
@@ -17,8 +18,111 @@ public class AiModule
         {
             throw new InvalidOperationException("Невозможно сделать ход: поставлен мат");
         }
+        return Minimax(boardState, 0);
+    }
+
+    /// <summary>
+    /// Выбрать ход с лучшей оценкой из списка.
+    /// </summary>
+    /// <param name="boardState">Состояние доски.</param>
+    /// <param name="moves">Список ходов.</param>
+    private static FigureMove GetBestMove(BoardState boardState, List<FigureMove> moves)
+    {
+        FigureMove bestMove = null;
+        double bestValue = EvaluateBoard(boardState);
+        foreach(FigureMove move in moves)
+        {
+            // Создаем виртуальную доску
+            BoardState virtualBoard = new BoardState(boardState);
+            // Двигаем фигуру
+            virtualBoard.ExecuteMove(move);
+            // Оцениваем ход
+            double boardValue = EvaluateBoard(virtualBoard);
+            if(boardState.turnColor == Figure.FigureColor.white && boardValue > bestValue)
+            {
+                bestMove = move;
+                bestValue = boardValue;
+            }
+            if(boardState.turnColor == Figure.FigureColor.black && boardValue < bestValue)
+            {
+                bestMove = move;
+                bestValue = boardValue;
+            }
+        }
+        // Если нет хода улучшающего оценку доски, берем случайный ход
+        if(bestMove is null)
+        {
+            return RandomMove(boardState);
+        }
+        return bestMove;
+    }
+
+    /// <summary>
+    /// Возвращает список ходов, доступных после этого хода
+    /// </summary>
+    public List<FigureMove> GetDerivedMoves(FigureMove move)
+    {
+        BoardState virtualBoard = move.boardStateAfterMove;
+        virtualBoard.UpdateLegalMoves();
+        List<FigureMove> derivedMoves = virtualBoard.GetLegalMoves();
+        return derivedMoves;
+    }
+
+    /// <summary>
+    /// Рекурсивная часть функции Minimax.
+    /// </summary>
+    private static double _Minimax(FigureMove move, int currentDepth, int maxDepth)
+    {
+        if(currentDepth < maxDepth)
+        {
+            // Обновляем список ходов
+            move.boardStateAfterMove.UpdateLegalMoves();
+            // Получаем оценку каждого хода
+            List<FigureMove> moves = move.boardStateAfterMove.GetLegalMoves();
+            List<double> values = new List<double>();
+            moves.ForEach(mv => values.Add(_Minimax(mv, currentDepth + 1, maxDepth)));
+            // Возвращаем минимум или максимум в зависимости от того чей ход
+            return move.boardStateAfterMove.turnColor == Figure.FigureColor.white ? values.Min() : values.Max();
+        }
+        else
+        {
+            // Если достигли конца дерева, получаем оценку доски
+            return EvaluateBoard(move.boardStateAfterMove);
+        }
+    }
+
+    /// <summary>
+    /// Возвращает ход с лучшей оценкой с помощью алгоритма минимакс.
+    /// </summary>
+    private static FigureMove Minimax(BoardState boardState, int maxDepth)
+    {
+        // Список разрешенных ходов
+        List<FigureMove> availableMoves = boardState.GetLegalMoves();
+        // Оценки ходов
+        List<double> moveValues = availableMoves.Select(move => _Minimax(move, 0, maxDepth)).ToList();
+        // Значение лучшей оценки
+        double bestMoveValue = boardState.turnColor == Figure.FigureColor.white ? moveValues.Max() : moveValues.Min();
+        // Выбираем ходы с лучшей оценкой
+        List<FigureMove> movesWithBestvalue = new List<FigureMove>();
+        for(int i = 0; i < moveValues.Count; i++)
+        {
+            if(moveValues[i] == bestMoveValue)
+            {
+                movesWithBestvalue.Add(availableMoves[i]);
+            }
+        }
+        // Выбираем случайный ход из ходов с лучшей оценкой
+        FigureMove bestMove = movesWithBestvalue[random.Next(movesWithBestvalue.Count)];
+        return bestMove;
+    }
+
+    /// <summary>
+    /// Возвращает ход с лучшей оценкой.
+    /// </summary>
+    private static FigureMove BestEvaluationMove(BoardState boardState)
+    {
         // Ищем ход с лучшей оценкой
-        List<FigureMove> availableMoves = boardState.moveList.FindAll(move => move.attackingFigures.Count == 0);
+        List<FigureMove> availableMoves = boardState.GetLegalMoves();
         FigureMove bestMove = null;
         double bestValue = EvaluateBoard(boardState);
         foreach(FigureMove move in availableMoves)
@@ -46,7 +150,6 @@ public class AiModule
     /// <summary>
     /// Делает случайный ход.
     /// </summary>
-    /// <param name="boardState"></param>
     private static FigureMove RandomMove(BoardState boardState)
     {
         List<FigureMove> availableMoves = boardState.moveList.FindAll(move => move.attackingFigures.Count == 0);
@@ -57,7 +160,6 @@ public class AiModule
     /// <summary>
     /// Оценить состояние доски.
     /// </summary>
-    /// <returns></returns>
     public static double EvaluateBoard(BoardState boardState)
     {
         double sum = 0.0;

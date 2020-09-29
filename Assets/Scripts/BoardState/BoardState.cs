@@ -294,6 +294,14 @@ public class BoardState
     }
 
     /// <summary>
+    /// Возвращает список разрешенных (не приводящих к шаху) ходов
+    /// </summary>
+    public List<FigureMove> GetLegalMoves()
+    {
+        return moveList.FindAll(move => move.attackingFigures.Count == 0);
+    }
+
+    /// <summary>
     /// Совершить ход.
     /// </summary>
     public void ExecuteMove(FigureMove move)
