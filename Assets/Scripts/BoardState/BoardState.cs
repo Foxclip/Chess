@@ -37,6 +37,17 @@ public class BoardState
     public Action<Figure> figureCreatedCallback;
 
     /// <summary>
+    /// Состояния шаха
+    /// </summary>
+    public enum CheckState
+    {
+        none,
+        check,
+        mate,
+        stalemate
+    }
+
+    /// <summary>
     /// Конструктор доски. Заполяет доску фигурами как в начале партии.
     /// </summary>
     public BoardState(Action<Figure> figureCreatedCallback = null)
@@ -221,12 +232,32 @@ public class BoardState
     }
 
     /// <summary>
-    /// Определяет, поставлен ли королю того цвета который сейчас ходит мат.
+    /// Определяет, поставлен ли королю того цвета который сейчас ходит шах, мат или пат.
     /// </summary>
-    public bool DetectMate()
+    public CheckState GetCheckState()
     {
-        // Определение мата
-        return moveList.FindAll(move => move.attackingFigures.Count == 0).Count == 0;
+        // Шах
+        bool check = DetectCheck(turnColor);
+        // Остались ли ходы
+        bool someMovesRemain = moveList.FindAll(move => move.attackingFigures.Count == 0).Count > 0;
+        // Варианты: нет, шах, мат, пат
+        if(!check && someMovesRemain)
+        {
+            return CheckState.none;
+        }
+        if(check && someMovesRemain)
+        {
+            return CheckState.check;
+        }
+        if(check && !someMovesRemain)
+        {
+            return CheckState.mate;
+        }
+        if(!check && !someMovesRemain)
+        {
+            return CheckState.stalemate;
+        }
+        return CheckState.none;
     }
 
     /// <summary>

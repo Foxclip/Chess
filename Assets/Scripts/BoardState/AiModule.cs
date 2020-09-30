@@ -15,9 +15,14 @@ public class AiModule
     /// </summary>
     public static FigureMove AiMove(BoardState boardState)
     {
-        if(boardState.DetectMate())
+        BoardState.CheckState checkState = boardState.GetCheckState();
+        if(checkState == BoardState.CheckState.mate)
         {
             throw new InvalidOperationException("Невозможно сделать ход: поставлен мат");
+        }
+        else if(checkState == BoardState.CheckState.stalemate)
+        {
+            throw new InvalidOperationException("Невозможно сделать ход: пат");
         }
         return Minimax(boardState, 2);
     }

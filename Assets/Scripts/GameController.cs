@@ -262,13 +262,24 @@ public class GameController : MonoBehaviour
             }
         }
 
+        BoardState.CheckState checkState = boardState.GetCheckState();
         // Мат
-        if(boardState.DetectMate())
+        if(checkState == BoardState.CheckState.mate)
         {
             Debug.Log($"MATE TO {boardState.turnColor} KING");
             gameEnded = true;
             endgameText.gameObject.SetActive(true);
             string text = boardState.turnColor == Figure.FigureColor.black ? "Белые выиграли" : "Черные выграли";
+            endgameText.transform.GetChild(0).GetComponent<Text>().text = text;
+            return;
+        }
+        // Пат
+        else if(checkState == BoardState.CheckState.stalemate)
+        {
+            Debug.Log($"STALEMATE TO {boardState.turnColor} KING");
+            gameEnded = true;
+            endgameText.gameObject.SetActive(true);
+            string text = "Ничья";
             endgameText.transform.GetChild(0).GetComponent<Text>().text = text;
             return;
         }
