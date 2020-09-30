@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -39,6 +40,11 @@ public class GameController : MonoBehaviour
     /// GameObject фигуры, который перемещается.
     /// </summary>
     private Transform currentMovingPiece;
+
+    /// <summary>
+    /// Ход ИИ, который необходимо выполнить
+    /// </summary>
+    private FigureMove currentAiMove = null;
 
     /// <summary>
     /// Состояние после завершения партии.
@@ -100,6 +106,9 @@ public class GameController : MonoBehaviour
         {
             LoadGameObject(figure);
         }
+        // Запуск потока ИИ
+        Thread aiThread = new Thread(new ThreadStart(AiThreadFunc));
+        aiThread.Start();
     }
 
     void Update()
@@ -129,6 +138,31 @@ public class GameController : MonoBehaviour
             {
                 hit.collider.gameObject.BroadcastMessage("ObjectClicked", SendMessageOptions.DontRequireReceiver);
             }
+        }
+    }
+
+    private void FixedUpdate()
+    {
+        // Выполняем ход ИИ
+        if(currentAiMove != null)
+        {
+            BeginMove(currentAiMove);
+            currentAiMove = null;
+        }
+    }
+
+    /// <summary>
+    /// Поток ИИ.
+    /// </summary>
+    public void AiThreadFunc()
+    {
+        while(true)
+        {
+            if(boardState.turnColor == Figure.FigureColor.black && !interfaceLocked)
+            {
+                currentAiMove = AiModule.AiMove(boardState);
+            }
+            Thread.Sleep(100);
         }
     }
 
@@ -224,9 +258,6 @@ public class GameController : MonoBehaviour
     /// </summary>
     public void EndMove()
     {
-        // Снимаем блокировку интерфейса
-        interfaceLocked = false;
-
         // Делаем ход на BoardState
         boardState.ExecuteMove(currentMove);
 
@@ -284,11 +315,7 @@ public class GameController : MonoBehaviour
             return;
         }
 
-        // Ход ИИ
-        if(boardState.turnColor == Figure.FigureColor.black)
-        {
-            FigureMove aiMove = AiModule.AiMove(boardState);
-            BeginMove(aiMove);
-        }
+        // Снимаем блокировку интерфейса
+        interfaceLocked = false;
     }
 }

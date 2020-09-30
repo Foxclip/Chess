@@ -10,6 +10,14 @@ public class AiModule
     private static readonly System.Random random = new System.Random();
     private static int moveCheckedCounter = 0;
 
+    public static void AiThreadFunc()
+    {
+        while(true)
+        {
+
+        }
+    }
+
     /// <summary>
     /// Совершить ход.
     /// </summary>
